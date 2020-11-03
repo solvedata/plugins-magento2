@@ -1,0 +1,26 @@
+<?php
+
+use SolveData\Events\Block\WebSDK\Event\Destroy;
+
+/** @var $block Destroy */
+?>
+<?php if ($block->isAllowed()): ?>
+<!-- BEGIN SOLVE WEB SDK DESTROY EVENT -->
+<script>
+//<![CDATA[
+require (['jquery'], function($) {
+    $(document).ready(function() {
+        'use strict';
+
+        try {
+            solve.destroy();
+        }
+        catch (e) {
+            console.error(e.name + ': ' + e.message);
+        }
+    });
+});
+//]]>
+</script>
+<!-- END SOLVE WEB SDK DESTROY EVENT -->
+<?php endif; ?>

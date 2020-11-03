@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Quote\Model\Quote">
+        <plugin name="quote_fix_get_customer_is_guest"
+                type="SolveData\Events\Plugin\Quote\FixGetCustomerIsGuest"/>
+    </type>
+    <type name="SolveData\Events\Model\Logger\Handler\Debug">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="SolveData\Events\Model\Logger\Handler\Exception">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="SolveData\Events\Model\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">SolveData Logger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">SolveData\Events\Model\Logger\Handler\Debug</item>
+                <item name="exception" xsi:type="object">SolveData\Events\Model\Logger\Handler\Exception</item>
+                <item name="sentry" xsi:type="object">SolveData\Events\Model\Logger\Handler\Sentry</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="SolveDataEventsReader" type="Magento\Framework\Config\Reader\Filesystem">
+        <arguments>
+            <argument name="converter" xsi:type="object">SolveData\Events\Model\Config\SolveDataEvents\Converter</argument>
+            <argument name="schemaLocator" xsi:type="object">SolveData\Events\Model\Config\SolveDataEvents\SchemaLocator</argument>
+            <argument name="fileName" xsi:type="string">solvedata_events.xml</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SolveDataEventsDataConfig" type="Magento\Framework\Config\Data">
+        <arguments>
+            <argument name="reader" xsi:type="object">SolveDataEventsReader</argument>
+            <argument name="cacheId" xsi:type="string">solvedata_events_config_cache</argument>
+        </arguments>
+    </virtualType>
+    <type name="SolveData\Events\Model\Config\Source\Events">
+        <arguments>
+            <argument name="dataConfig" xsi:type="object">SolveDataEventsDataConfig</argument>
+        </arguments>
+    </type>
+    <type name="SolveData\Events\Model\Event\Transport\Adapter\GraphQL">
+        <arguments>
+            <argument name="dataConfig" xsi:type="object">SolveDataEventsDataConfig</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="solvedata_events_event_listing_data_source" xsi:type="string">SolveData\Events\Model\ResourceModel\Event\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="SolveData\Events\Model\ResourceModel\Event\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">solvedata_event</argument>
+            <argument name="resourceModel" xsi:type="string">SolveData\Events\Model\ResourceModel\Event</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="SolveData\Events\Model\Session\Storage" type="Magento\Framework\Session\Storage">
+        <arguments>
+            <argument name="namespace" xsi:type="string">solvedata_events</argument>
+        </arguments>
+    </virtualType>
+    <type name="SolveData\Events\Model\Session">
+        <arguments>
+            <argument name="storage" xsi:type="object">SolveData\Events\Model\Session\Storage</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="solvedata_events_import_customer" xsi:type="object">SolveData\Events\Console\Command\Import\Customer</item>
+                <item name="solvedata_events_import_order" xsi:type="object">SolveData\Events\Console\Command\Import\Order</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

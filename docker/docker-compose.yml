@@ -1,0 +1,94 @@
+version: '3.3'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "${NGINX_HOST_HTTP_PORT}:80"
+      - "${NGINX_HOST_HTTPS_PORT}:443"
+    volumes:
+      - ${NGINX_HOST_SITE_PATH}:/var/www
+      - ./configs/nginx/conf.d/app.conf:/etc/nginx/conf.d/app.conf:ro
+      - ./configs/nginx/ssl:/etc/nginx/ssl:ro
+    links:
+      - php-fpm
+    depends_on:
+      - kibana
+      - phpredisadmin
+
+  php-fpm:
+    build: ./configs/php
+    volumes:
+      - ${NGINX_HOST_SITE_PATH}:/var/www
+    links:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "${MYSQL_HOST_PORT}:${MYSQL_PORT}"
+    environment:
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${MYSQL_HOST_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
+      - mysql:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis:/var/lib/redis
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - ${PHPMYADMIN_HOST_PORT}:80
+    links:
+      - mysql:db
+
+  phpredisadmin:
+    image: erikdubbelboer/phpredisadmin
+    container_name: phpredisadmin
+    depends_on:
+      - redis
+    links:
+      - redis:redis
+    ports:
+      - ${PHPREDISADMIN_HOST_PORT}:80
+    environment:
+      REDIS_1_HOST: redis
+      ADMIN_USER: ${PHPREDISADMIN_ADMIN_USER}
+      ADMIN_PASS: ${PHPREDISADMIN_ADMIN_PASS}
+
+  elasticsearch:
+    image: elasticsearch:6.8.5
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      - cluster.name=${ELASTICSEARCH_CLUSTER_NAME}
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+    ports:
+      - 9200:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.8.5
+    environment:
+      - SERVER_NAME=${KIBANA_SERVER_NAME}
+      - ELASTICSEARCH_HOSTS=${KIBANA_ELASTICSEARCH_HOSTS}
+      - ELASTICSEARCH_USERNAME=${KIBANA_ELASTICSEARCH_USERNAME}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_ELASTICSEARCH_PASSWORD}
+    ports:
+      - ${KIBANA_HOST_PORT}:5601
+
+volumes:
+  mysql:
+  redis:
+  elasticsearch:

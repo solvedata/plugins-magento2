@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="head.additional">
+            <block class="SolveData\Events\Block\WebSDK\InitCode"
+                   name="solvedata_events_websdk_init_code"
+                   template="SolveData_Events::websdk/init_code.phtml"/>
+        </referenceBlock>
+        <referenceContainer name="before.body.end">
+            <block class="SolveData\Events\Block\WebSDK\Event\Identify"
+                   name="solvedata_events_websdk_event_identify"
+                   template="SolveData_Events::websdk/event/identify.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

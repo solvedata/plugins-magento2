@@ -1,0 +1,28 @@
+<?php
+
+use SolveData\Events\Block\WebSDK\Event\Identify;
+
+/** @var $block Identify */
+?>
+<?php if ($block->isAllowed()): ?>
+<!-- BEGIN SOLVE WEB SDK IDENTIFY EVENT -->
+<script>
+//<![CDATA[
+require (['jquery'], function($) {
+    $(document).ready(function() {
+        'use strict';
+
+        try {
+            solve.identify({
+                email: '<?php echo $block->getCustomerEmail(); ?>'
+            });
+        }
+        catch (e) {
+            console.error(e.name + ': ' + e.message);
+        }
+    });
+});
+//]]>
+</script>
+<!-- END SOLVE WEB SDK IDENTIFY EVENT -->
+<?php endif; ?>

@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="solvedata_events" type="solvedata_events" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="solvedata_events">
+        <xs:sequence>
+            <xs:element name="event" type="event" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="event">
+        <xs:sequence>
+            <xs:element name="mutation" type="mutation" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:complexType name="mutation">
+        <xs:attribute name="order" type="xs:string" use="optional" />
+        <xs:attribute name="class" type="xs:string" use="required" />
+    </xs:complexType>
+</xs:schema>

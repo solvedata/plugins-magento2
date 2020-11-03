@@ -1,0 +1,11 @@
+<?php
+
+use SolveData\Events\Block\WebSDK\InitCode;
+
+/** @var $block InitCode */
+?>
+<?php if ($block->isEnabled()): ?>
+<!-- BEGIN SOLVE WEB SDK INITIALIZATION CODE -->
+<?php echo $block->getInitCode(); ?>
+<!-- END SOLVE WEB SDK INITIALIZATION CODE -->
+<?php endif; ?>

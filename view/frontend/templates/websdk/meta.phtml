@@ -1,0 +1,9 @@
+<?php
+
+use SolveData\Events\Block\WebSDK\MetaAbstract;
+
+/** @var $block MetaAbstract */
+?>
+<?php if ($block->isEnabled()): ?>
+<meta name="<?php echo $block->getMetaName(); ?>" content="<?php echo $block->getMetaContent(); ?>" />
+<?php endif; ?>

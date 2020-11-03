@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="sales_order_save_before">
+        <observer name="add_is_object_new_to_order_extension"
+                  instance="SolveData\Events\Observer\Sales\OrderSaveBeforeObserver" />
+    </event>
+    <event name="sales_order_save_after">
+        <observer name="prepare_sales_order_save_after_data"
+                  instance="SolveData\Events\Observer\Sales\OrderSaveAfterObserver" />
+    </event>
+    <event name="sales_order_shipment_save_after">
+        <observer name="prepare_sales_order_shipment_data"
+                  instance="SolveData\Events\Observer\Sales\OrderShipmentSaveObserver" />
+    </event>
+    <event name="customer_register_success">
+        <observer name="prepare_customer_register_success_data"
+                  instance="SolveData\Events\Observer\Customer\RegisterObserver" />
+    </event>
+    <event name="customer_account_edited">
+        <observer name="prepare_customer_account_edited_data"
+                  instance="SolveData\Events\Observer\Customer\AccountEditedObserver" />
+    </event>
+    <event name="customer_address_save_after">
+        <observer name="prepare_customer_address_save_data"
+                  instance="SolveData\Events\Observer\Customer\AddressSaveObserver" />
+    </event>
+    <event name="customer_login">
+        <observer name="prepare_customer_login_data"
+                  instance="SolveData\Events\Observer\Customer\LoginObserver" />
+    </event>
+    <event name="customer_logout">
+        <observer name="prepare_customer_logout_data"
+                  instance="SolveData\Events\Observer\Customer\LogoutObserver" />
+    </event>
+    <event name="checkout_cart_save_after">
+        <observer name="checkout_cart_save_add_data"
+                  instance="SolveData\Events\Observer\Checkout\CartSaveObserver" />
+    </event>
+    <event name="newsletter_subscriber_save_commit_after">
+        <observer name="prepare_newsletter_subscriber_save_commit_data"
+                  instance="SolveData\Events\Observer\Newsletter\SubscriberSaveCommitObserver" />
+    </event>
+    <event name="order_cancel_after">
+        <observer name="order_cancel_after_data"
+                  instance="SolveData\Events\Observer\Sales\OrderCancelAfterObserver" />
+    </event>
+</config>
