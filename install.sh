@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 set -x
+TMP_DIR=$(mktemp -d)
 
 # Start an SSH agent session and add all keys to into it
 eval "$(ssh-agent -s)"
 find ~/.ssh -maxdepth 1 -name 'id_*' -not -name 'id_*.pub' -exec ssh-add {} \;
 
-USER_GROUP_ID="$(id -u):$(id -g)"
 plugin_vcs_name='magento2-plugin'
 plugin_composer_name='plugins-magento2'
 
@@ -16,15 +16,23 @@ run_composer() {
   docker run --rm --interactive --tty \
     --volume "${COMPOSER_HOME:-$HOME/.composer}:/tmp" \
     --volume "${PWD}:/app" \
-    --user "${USER_GROUP_ID}" \
-    composer:1.8.0 -vvv "$@"
+    --user "$(id -u):$(id -g)" \
+    composer:1.8.0 --profile -vvv "$@" || (
+      exit_code=$?
+      echo "Exited with code: $exit_code"
+      echo "If composer exited part way through without reason, it may have run out of memory"
+      echo "Stop all other running containers and try again."
+      echo "Composer needs about 1.7GB of memory to install Magento and 0.7GB to install other packages"
+      exit 1
+    )
+
 }
 
 echo "Enter folder name [magento]:"
 # read MAGENTO_PATH
-MAGENTO_PATH="${MAGENTO_PATH:-magento}"
+MAGENTO_PATH="${MAGENTO_PATH:-magento2}"
 mkdir -p "$MAGENTO_PATH"
-cd "$MAGENTO_PATH"
+cd "$MAGENTO_PATH" || exit 1
 
 if [ ! -f "composer.json" ]; then
   echo "Start of installing magento..."
@@ -37,18 +45,15 @@ if [ ! -f "composer.json" ]; then
   fi
 
   echo "Downloading magento ($MAGENTO_COMPOSER)..."
-  run_composer create-project --ignore-platform-reqs --repository-url=https://repo.magento.com/ $MAGENTO_COMPOSER .
-fi
+  run_composer create-project --prefer-dist --ignore-platform-reqs --repository-url=https://repo.magento.com/ $MAGENTO_COMPOSER .
 
-if [ ! -d "./vendor" ]; then
   echo "Downloading required packages..."
 
   # Pin kiwicommerce/module-cron-scheduler to v1.0.7 to support Magento versions >= v2.3.5
-  run_composer require --ignore-platform-reqs kiwicommerce/module-cron-scheduler=1.0.7
-  run_composer require --ignore-platform-reqs kiwicommerce/module-admin-activity
-  run_composer require --ignore-platform-reqs kiwicommerce/module-login-as-customer
-
-  exit 1
+  run_composer require --prefer-dist --ignore-platform-reqs \
+    kiwicommerce/module-cron-scheduler=1.0.7 \
+    kiwicommerce/module-admin-activity \
+    kiwicommerce/module-login-as-customer
 fi
 
 if [ ! -d "./vendor/solvedata/${plugin_composer_name}/.env" ]; then
@@ -58,7 +63,7 @@ if [ ! -d "./vendor/solvedata/${plugin_composer_name}/.env" ]; then
   #   rather than prompting for a Github API token.
   # This requires setting up a readonly deploy SSH key in the solvedata/plugins-magento2 repo.
 
-  run_composer -vvv config "repositories.${plugin_vcs_name}" vcs "https://github.com/solvedata/${plugin_vcs_name}.git"
+  run_composer config "repositories.${plugin_vcs_name}" vcs "https://github.com/solvedata/${plugin_vcs_name}.git"
 
   # if [ ! -d ~/".composer/cache/vcs/git-github.com-solvedata-${plugin_vcs_name}.git/" ]; then
   #   # Leet hax. Clone the repo outside of the the composer container so we
@@ -66,12 +71,12 @@ if [ ! -d "./vendor/solvedata/${plugin_composer_name}/.env" ]; then
   #   git clone --mirror "https://github.com/solvedata/${plugin_vcs_name}.git" ~/".composer/cache/vcs/git-github.com-solvedata-${plugin_vcs_name}.git/"
   # fi
 
-  run_composer -vvv require --no-interaction --ignore-platform-reqs "solvedata/${plugin_composer_name}"
+  run_composer require --no-interaction --ignore-platform-reqs "solvedata/${plugin_composer_name}"
 
   if [ -f '../install.sh' ]; then
     # Link the docker things to the docker things in this directory.
     rm -r ./vendor/solvedata/plugins-magento2/docker || true
-    ln -s ../../../ ./vendor/solvedata/plugins-magento2/docker
+    ln -s ../../../../docker ./vendor/solvedata/plugins-magento2/docker
   fi
 
 
