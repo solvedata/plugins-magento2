@@ -3,9 +3,6 @@
 set -x
 TMP_DIR=$(mktemp -d)
 
-# Start an SSH agent session and add all keys to into it
-eval "$(ssh-agent -s)"
-find ~/.ssh -maxdepth 1 -name 'id_*' -not -name 'id_*.pub' -exec ssh-add {} \;
 
 plugin_vcs_name='magento2-plugin'
 plugin_composer_name='plugins-magento2'
@@ -29,7 +26,6 @@ run_composer() {
 }
 
 echo "Enter folder name [magento]:"
-# read MAGENTO_PATH
 MAGENTO_PATH="${MAGENTO_PATH:-magento}"
 mkdir -p "$MAGENTO_PATH"
 cd "$MAGENTO_PATH" || exit 1
@@ -37,7 +33,7 @@ cd "$MAGENTO_PATH" || exit 1
 if [ ! -f "composer.json" ]; then
   echo "Start of installing magento..."
   echo "Enter magento version: "
-  export MAGENTO_VERSION=2.3.5
+  MAGENTO_VERSION="${MAGENTO_VERSION:-2.3.5}"
   if [ -z "$MAGENTO_VERSION" ]; then
     MAGENTO_COMPOSER="magento/project-community-edition"
   else
