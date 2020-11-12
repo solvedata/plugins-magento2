@@ -26,6 +26,7 @@ class Event extends AbstractModel
     const STATUS_COMPLETED  = 2;
     const STATUS_FAILED     = 3;
     const STATUS_RETRY      = 4;
+    const STATUS_EXCEPTION  = 5;
 
     const STATUSES = [
         self::STATUS_NEW        => 'New',
@@ -33,6 +34,7 @@ class Event extends AbstractModel
         self::STATUS_COMPLETED  => 'Completed',
         self::STATUS_FAILED     => 'Failed',
         self::STATUS_RETRY      => 'Retry',
+        self::STATUS_EXCEPTION  => 'Exception',
     ];
 
     /**
@@ -262,34 +264,43 @@ class Event extends AbstractModel
     public function sendEvents(): bool
     {
         $resource = $this->getResource();
-        $events = $this->getEventsToSend();
-        if (empty($events)) {
+
+        # Grab a selection of events we need to send
+        $eventsToProcess = $this->getEventsToSend();
+        if (empty($eventsToProcess)) {
             return false;
         }
 
-        $eventIds = array_column($events, ResourceModel::ENTITY_ID);
+        while (!empty($eventsToProcess)) {
+            $event = array_shift($eventsToProcess);
+            $eventId = $event[ResourceModel::ENTITY_ID];
+            $events = array($events);
+            $eventIds = array($eventId);
 
-        try {
-            $resource->beginTransaction();
-            $this->logger->debug(sprintf('Starting processing batch of events: %s', json_encode($eventIds)));
+            try {
+                $resource->beginTransaction();
+                $this->logger->debug('Starting processing event', ['event_entity_id' => $eventId]);
 
-            $this->lockEventsToProcessing($eventIds);
-            $requestResults = $this->transport->send($events);
-            $this->updateEvents($events, $requestResults);
+                $this->lockEventsToProcessing($eventIds);
+                $requestResults = $this->transport->send($events);
+                $this->updateEvents($events, $requestResults);
 
-            $this->logger->debug(sprintf('Finished proccessing batch of events: %s', json_encode($eventIds)));
-            $resource->commit();
+                $this->logger->debug('Finished processing event', ['event_entity_id' => $eventId]);
+                $resource->commit();
+            } catch (\Throwable $e) {
+                $resource->rollBack();
+                if (empty($event['request'])) {
+                    $event['request'] = json_encode([ "exception" => "$e"]);
+                }
+                $this->updateEvents($events, [], /* $isException = */ true);
 
-            return true;
-        } catch (\Throwable $e) {
-            $resource->rollBack();
-            $this->updateEvents($events, []);
-            
-            $this->logger->debug(sprintf('Error proccessing batch of events: %s', json_encode($eventIds)));
-            $this->logger->critical($e);
+                $this->logger->debug('Error processing event', ['event_entity_id' => $eventId]);
+                $this->logger->critical($e);
 
-            return false;
+                return false;
+            }
         }
+        return true;
     }
 
     /**

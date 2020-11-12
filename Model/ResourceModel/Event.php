@@ -158,13 +158,13 @@ class Event extends AbstractDb
      *
      * @throws LocalizedException
      */
-    public function updateEvents(array $events, array $requestResults): int
+    public function updateEvents(array $events, array $requestResults, bool $isException = false): int
     {
         foreach ($events as &$event) {
             $event['attempt'] = $event['attempt'] + 1;
             $event['finished_at'] = new \Zend_Db_Expr('NOW()');
             if (empty($requestResults[$event[self::ENTITY_ID]])) {
-                $event['status'] = EventModel::STATUS_FAILED;
+                $event['status'] = $isException ? EventModel::STATUS_EXCEPTION : EventModel::STATUS_FAILED;
                 continue;
             }
 
