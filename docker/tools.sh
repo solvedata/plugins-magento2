@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 DIR=$(dirname "$0")
 
 case $1 in
@@ -44,8 +46,9 @@ case $1 in
         HOST_NAME="solvedata.local"
         HOST_ROW="127.0.0.1 solvedata.local"
         if [ ! -n "$(grep "$HOST_NAME" $HOST_FILE)" ] ; then
-            echo "Adding host to your to hosts $HOSTFILE";
-            sudo -- sh -c -e "echo '\n$HOST_ROW\n' >> $HOST_FILE";
+            echo "You should add this line to your to hosts(after >>):";
+            echo ">> $HOST_ROW"
+            # sudo -- sh -c -e "echo '\n$HOST_ROW\n' >> $HOST_FILE";
         fi
 
         if [ ! -f "${DIR}/.env" ]; then
@@ -109,7 +112,7 @@ case $1 in
         tools:
             '${DIR}/tools.sh' php_exec ...
             '${DIR}/tools.sh' mysql_exec ...
-        
+
         magento:
             '${DIR}/tools.sh'  run_cron
             '${DIR}/tools.sh'  recompile
