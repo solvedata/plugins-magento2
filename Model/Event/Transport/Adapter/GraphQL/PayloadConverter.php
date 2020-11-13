@@ -606,7 +606,7 @@ class PayloadConverter
     {
         $data = [
             'id'         => $quote['entity_id'],
-            'sid'        => $this->getProfileSid($quote['customer_email'], $area),
+            'sid'        => !empty($quote['customer_email']) ? $this->getProfileSid($quote['customer_email'], $area) : null,
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->prepareAttributesData($area)),

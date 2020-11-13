@@ -12,26 +12,6 @@ use SolveData\Events\Model\Event\RegisterHandler\EventAbstract;
 class CartSave extends EventAbstract
 {
     /**
-     * Event is allowed
-     *
-     * @param Observer $observer
-     *
-     * @return bool
-     *
-     * @throws NoSuchEntityException
-     */
-    protected function isAllowed(Observer $observer): bool
-    {
-        if (!parent::isAllowed($observer)) {
-            return false;
-        }
-        /** @var Cart $cart */
-        $cart = $observer->getEvent()->getCart();
-
-        return !empty($cart->getQuote()->getCustomerEmail());
-    }
-
-    /**
      * Get observer data
      *
      * @param Observer $observer
