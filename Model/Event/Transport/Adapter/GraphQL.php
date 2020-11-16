@@ -416,10 +416,11 @@ class GraphQL extends CurlAbstract
      */
     private static function generateRequestId(array $event): string
     {
-        $store = "NE";
+        $store = "-no-event-";
+        $entity = "-no-event-";
         if (!empty($event)) {
-            $store = empty($event['store_id']) ? "XX" : $event['store_id'];
-            $entity = empty($event[ResourceModel::ENTITY_ID]) ? "XX" : $event[ResourceModel::ENTITY_ID];
+            $store = empty($event['store_id']) ? "-absent-" : $event['store_id'];
+            $entity = empty($event[ResourceModel::ENTITY_ID]) ? "-absent-" : $event[ResourceModel::ENTITY_ID];
         }
         // Request IDs need to be more than 20 characters long.
         // uniqid("", true) returns at least a 23 character long string.
