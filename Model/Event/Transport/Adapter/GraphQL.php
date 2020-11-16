@@ -421,8 +421,8 @@ class GraphQL extends CurlAbstract
             $store = empty($event['store_id']) ? "XX" : $event['store_id'];
             $entity = empty($event[ResourceModel::ENTITY_ID]) ? "XX" : $event[ResourceModel::ENTITY_ID];
         }
-        // uniqid("", true) returns a 23 character long string.
-        // uniqid(A, _) <=> A . uniqid("", _)
+        // Request IDs need to be more than 20 characters long.
+        // uniqid("", true) returns at least a 23 character long string.
         return uniqid( "S$store" . "E$entity" . "-" , true);
     }
 
