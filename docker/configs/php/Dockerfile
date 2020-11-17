@@ -36,6 +36,7 @@ RUN docker-php-ext-install sockets
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 ADD php.ini /usr/local/etc/php/conf.d/40-custom.ini
+ADD php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /var/www
 
