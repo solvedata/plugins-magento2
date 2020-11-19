@@ -5,75 +5,42 @@ declare(strict_types=1);
 namespace SolveData\Events\Helper;
 
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\HTTP\Adapter\Curl as CurlAdapter;
 use Magento\Framework\Registry;
+use SolveData\Events\Model\Config;
+use SolveData\Events\Model\Logger;
 use SolveData\Events\Model\ProfileRepository;
 
-class Profile
+class Profile extends CurlAdapter
 {
-    const REGISTRY_PREFIX = 'solvedata_profile';
+    const QUERY = <<<'GRAPHQL'
+query($email: Email) {
+    profile(email: $email) {
+        id
+    }
+}
+GRAPHQL;
 
     /**
-     * @var ProfileRepository
+     * @var Config
      */
-    protected $profileRepository;
+    protected $config;
 
     /**
-     * @var Registry
+     * @var Logger $logger
      */
-    protected $registry;
+    protected $logger;
 
     /**
-     * @param ProfileRepository $profileRepository
-     * @param Registry $registry
+     * @param Config $config
+     * @param Logger $logger
      */
     public function __construct(
-        ProfileRepository $profileRepository,
-        Registry $registry
+        Config $config,
+        Logger $logger
     ) {
-        $this->profileRepository = $profileRepository;
-        $this->registry = $registry;
-    }
-
-    /**
-     * Get registry name
-     *
-     * @param $name
-     *
-     * @return string
-     */
-    protected function getRegistryKey($name): string
-    {
-        return sprintf('%s_%s', self::REGISTRY_PREFIX, $name);
-    }
-
-    /**
-     * Get profile registry value
-     *
-     * @param string $name
-     *
-     * @return mixed|null
-     */
-    protected function getRegistry(string $name)
-    {
-        return $this->registry->registry($this->getRegistryKey($name));
-    }
-
-    /**
-     * Set registry value
-     *
-     * @param string $name
-     * @param $value
-     *
-     * @return Profile
-     */
-    protected function setRegistry(string $name, $value): Profile
-    {
-        $this->registry->register(
-            $this->getRegistryKey($name),
-            $value
-        );
-
-        return $this;
+        $this->config = $config;
+        $this->logger = $logger;
     }
 
     /**
@@ -88,21 +55,68 @@ class Profile
      */
     public function getSidByEmail(string $email, int $websiteId): string
     {
-        $sid = $this->getRegistry(sprintf('%s_%s', $email, $websiteId));
-        if (!empty($sid)) {
-            return $sid;
-        }
-        $profile = $this->profileRepository->create();
-        $sid = $profile->getSIdByEmail($email, $websiteId);
-        if (empty($sid)) {
-            throw new \Exception(sprintf(
-                'SolveData Profile sid is empty for "%s" email in "%d" website',
-                $email,
-                $websiteId
-            ));
-        }
+        $response = $this->request($email);
+        $body = json_decode($response['response']['body'], true);
 
-        return $sid;
+        // TODO handle non-existant profile
+        return $body['data']['profile']['id'];
+    }
+
+    protected function request(string $email): array
+    {        
+        $requestData = [
+            'url'     => $this->config->getAPIUrl(null),
+            'options' => [
+                CURLOPT_HTTPHEADER => [
+                    sprintf(
+                        'Authorization: Basic %s',
+                        base64_encode(sprintf('%s:%s',
+                            $this->config->getAPIKey(null),
+                            $this->config->getPassword(null)
+                        ))
+                    ),
+                ],
+                CURLOPT_POSTFIELDS => http_build_query([
+                    'query'     => self::QUERY,
+                    'variables' => json_encode(["email" => $email]),
+                ]),
+            ],
+        ];
+
+        try {
+            $this->logger->debug(sprintf('Start request for email %s', $email));
+            $this->logger->debug(sprintf('Send request: %s', json_encode($requestData)));
+            $this->write(
+                \Zend_Http_Client::POST,
+                $requestData['url'],
+                '1.1',
+                $requestData['options'][CURLOPT_HTTPHEADER],
+                $requestData['options'][CURLOPT_POSTFIELDS]
+            );
+            $response = $this->read();
+            $requestResult = [
+                'request' => [
+                    'url'        => $requestData['url'],
+                    'parameters' => urldecode($requestData['options'][CURLOPT_POSTFIELDS])
+                ],
+                'response' => [
+                    'body' => \Zend_Http_Response::extractBody($response),
+                    'code' => \Zend_Http_Response::extractCode($response),
+                ],
+            ];
+            $this->logger->debug(sprintf('Result of request: %s', json_encode($requestResult)));
+            $this->close();
+
+            $this->logger->debug(sprintf(
+                'Request result: %s',
+                json_encode($requestResult)
+            ));
+
+            return $requestResult;
+        } catch (\Throwable $t) {
+            $this->logger->critical($t);
+            throw $t;
+        }
     }
 
     /**
@@ -118,20 +132,7 @@ class Profile
      */
     public function saveSidByEmail(string $email, string $sid, int $websiteId): Profile
     {
-        if (!empty($this->getRegistry(sprintf('%s_%s', $email, $websiteId)))) {
-            return $this;
-        }
-        $profile = $this->profileRepository->create();
-        if ($profile->isExistByEmail($email, $websiteId)) {
-            return $this;
-        }
-
-        $profile->setEmail($email)
-            ->setSid($sid)
-            ->setWebsiteId($websiteId);
-        $this->profileRepository->save($profile);
-        $this->setRegistry(sprintf('%s_%s', $email, $websiteId), $sid);
-
+        // no-op
         return $this;
     }
 }

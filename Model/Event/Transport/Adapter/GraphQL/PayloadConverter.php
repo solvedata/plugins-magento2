@@ -218,30 +218,34 @@ class PayloadConverter
      */
     public function convertAddressesData(array $addresses): array
     {
-        $data = [];
-        foreach ($addresses as $key => $address) {
-            $key = (string)$key;
-            $data[$key] = $this->convertAddressData($address);
-            if (empty($data[$key])) {
-                continue;
-            }
+        // Drop all addresses until we have time to verify that Magento installations
+        //  cannot be configured with different country/region data.
+        return [];
 
-            if (empty($address[AddressInterface::DEFAULT_BILLING])
-                || empty($address[AddressInterface::DEFAULT_SHIPPING])
-            ) {
-                continue;
-            }
-            // Create copy address data but with a different type
-            if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
-                $addressType = $data[$key]['type'] == Address::TYPE_BILLING
-                    ? Address::TYPE_SHIPPING
-                    : Address::TYPE_BILLING;
-                $data[$key . '_copy'] = $data[$key];
-                $data[$key . '_copy']['type'] = $addressType;
-            }
-        }
+        // $data = [];
+        // foreach ($addresses as $key => $address) {
+        //     $key = (string)$key;
+        //     $data[$key] = $this->convertAddressData($address);
+        //     if (empty($data[$key])) {
+        //         continue;
+        //     }
 
-        return array_values($data);
+        //     if (empty($address[AddressInterface::DEFAULT_BILLING])
+        //         || empty($address[AddressInterface::DEFAULT_SHIPPING])
+        //     ) {
+        //         continue;
+        //     }
+        //     // Create copy address data but with a different type
+        //     if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
+        //         $addressType = $data[$key]['type'] == Address::TYPE_BILLING
+        //             ? Address::TYPE_SHIPPING
+        //             : Address::TYPE_BILLING;
+        //         $data[$key . '_copy'] = $data[$key];
+        //         $data[$key . '_copy']['type'] = $addressType;
+        //     }
+        // }
+
+        // return array_values($data);
     }
 
     /**
