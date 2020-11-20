@@ -76,6 +76,7 @@
             <argument name="commands" xsi:type="array">
                 <item name="solvedata_events_import_customer" xsi:type="object">SolveData\Events\Console\Command\Import\Customer</item>
                 <item name="solvedata_events_import_order" xsi:type="object">SolveData\Events\Console\Command\Import\Order</item>
+                <item name="solvedata_events_offlinesync_enqueue" xsi:type="object">SolveData\Events\Console\Command\OfflineSync\Enqueue</item>
             </argument>
         </arguments>
     </type>
