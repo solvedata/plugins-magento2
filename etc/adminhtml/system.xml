@@ -29,6 +29,13 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
+                <field id="offline_sync_mode" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable offline sync mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
                 <field id="sentry_dsn" translate="label" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sentry DSN</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>

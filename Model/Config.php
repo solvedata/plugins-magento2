@@ -15,6 +15,7 @@ class Config
     const XML_PATH_IS_ENABLED             = 'solvedata_events/general/enabled';
     const XML_PATH_ENABLED_EVENTS         = 'solvedata_events/general/enabled_events';
     const XML_PATH_DEBUG                  = 'solvedata_events/general/debug';
+    const XML_PATH_OFFLINE_SYNC_MODE      = 'solvedata_events/general/offline_sync_mode';
     const XML_PATH_SENTRY_DSN             = 'solvedata_events/general/sentry_dsn';
     const XML_PATH_EVENT_RETENTION_PERIOD = 'solvedata_events/general/event_retention_period';
     const XML_PATH_API_URL                = 'solvedata_events/api/url';
@@ -114,6 +115,15 @@ class Config
     {
         return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_DEBUG,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function isInOfflineSyncMode($store = null): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_OFFLINE_SYNC_MODE,
             ScopeInterface::SCOPE_STORE,
             $store
         );

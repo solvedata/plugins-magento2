@@ -16,6 +16,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
+use SolveData\Events\Model\Config;
 
 class PayloadConverter
 {
@@ -31,6 +32,11 @@ class PayloadConverter
     const ORDER_STATUS_PROCESSED = 'PROCESSED';
     const ORDER_STATUS_RETURNED  = 'RETURNED';
     const ORDER_STATUS_CANCELED  = 'CANCELED';
+
+    /**
+     * @var Config
+     */
+    protected $config;
 
     /**
      * @var CountryFactory
@@ -65,11 +71,13 @@ class PayloadConverter
      */
 
     public function __construct(
+        Config $config,
         CountryFactory $countryFactory,
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
         StoreManagerInterface $storeManager
     ) {
+        $this->config = $config;
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
@@ -218,34 +226,36 @@ class PayloadConverter
      */
     public function convertAddressesData(array $addresses): array
     {
-        // Drop all addresses until we have time to verify that Magento installations
-        //  cannot be configured with different country/region data.
-        return [];
+        if ($this->config->isInOfflineSyncMode()) {
+	    // Drop all addresses until we have time to verify that Magento installations
+            //  cannot be configured with different country/region data.
+            return [];
+        }
 
-        // $data = [];
-        // foreach ($addresses as $key => $address) {
-        //     $key = (string)$key;
-        //     $data[$key] = $this->convertAddressData($address);
-        //     if (empty($data[$key])) {
-        //         continue;
-        //     }
+        $data = [];
+        foreach ($addresses as $key => $address) {
+            $key = (string)$key;
+            $data[$key] = $this->convertAddressData($address);
+            if (empty($data[$key])) {
+                continue;
+            }
 
-        //     if (empty($address[AddressInterface::DEFAULT_BILLING])
-        //         || empty($address[AddressInterface::DEFAULT_SHIPPING])
-        //     ) {
-        //         continue;
-        //     }
-        //     // Create copy address data but with a different type
-        //     if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
-        //         $addressType = $data[$key]['type'] == Address::TYPE_BILLING
-        //             ? Address::TYPE_SHIPPING
-        //             : Address::TYPE_BILLING;
-        //         $data[$key . '_copy'] = $data[$key];
-        //         $data[$key . '_copy']['type'] = $addressType;
-        //     }
-        // }
+            if (empty($address[AddressInterface::DEFAULT_BILLING])
+                || empty($address[AddressInterface::DEFAULT_SHIPPING])
+            ) {
+                continue;
+            }
+            // Create copy address data but with a different type
+            if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
+                $addressType = $data[$key]['type'] == Address::TYPE_BILLING
+                    ? Address::TYPE_SHIPPING
+                    : Address::TYPE_BILLING;
+                $data[$key . '_copy'] = $data[$key];
+                $data[$key . '_copy']['type'] = $addressType;
+            }
+        }
 
-        // return array_values($data);
+        return array_values($data);
     }
 
     /**
