@@ -67,6 +67,7 @@ class Event extends AbstractDb
     public function getEventsToSend(): array
     {
         $connection = $this->getConnection();
+        
         $select = $connection
             ->select()
             ->from($this->getMainTable())
@@ -75,7 +76,13 @@ class Event extends AbstractDb
                 EventModel::STATUS_RETRY,
             ])
             ->where('attempt < ?', $this->config->getMaxAttemptCount())
-            ->where('scheduled_at < ?', new \Zend_Db_Expr('NOW()'))
+            ->where('scheduled_at < ?', new \Zend_Db_Expr('NOW()'));
+        
+        if ($this->config->isInOfflineSyncMode()) {
+            $select = $select->where('json_extract(payload, \'$.reconciler\') IS NOT NULL AND json_extract(payload, \'$.reconciler\')');
+        }
+
+        $select = $select
             ->order('status ' . Select::SQL_DESC)
             ->order('scheduled_at ' . Select::SQL_ASC)
             ->order('created_at ' . Select::SQL_ASC)

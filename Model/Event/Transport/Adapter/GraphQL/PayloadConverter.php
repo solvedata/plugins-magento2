@@ -204,10 +204,17 @@ class PayloadConverter
         $store = $this->getStoreDataByArea($area);
         $website = $this->getWebsiteDataByArea($area);
 
-        return [
+        $attributes = [
             'store'   => !empty($store) ? $store['name'] : null,
             'website' => !empty($website) ? $website['name'] : null,
         ];
+
+        if ($this->config->isInOfflineSyncMode()) {
+            $now = new \DateTime("now", new \DateTimeZone("UTC"));
+            $attributes['reconciled_at'] = $now->format(\DateTime::ISO8601);
+        }
+
+        return $attributes;
     }
 
     public function getOrderProvider(array $area): string
