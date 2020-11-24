@@ -57,6 +57,9 @@ class Profile extends AbstractDb
             return null;
         }
 
+        // Note that the `profile_id` is saved in the `sid` column.
+        // This is because sid was the old name for profile IDs and we
+        //  decided not to add a schema migration just to rename this column.
         return $profile['sid'];
     }
 }

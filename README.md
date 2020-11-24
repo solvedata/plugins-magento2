@@ -92,7 +92,7 @@ Run the following command Magento project directory (not the repository root) to
         const QUERY = <<<'GRAPHQL'
     mutation createOrUpdateProfile($input: ProfileInput!) {
         createOrUpdateProfile(input: $input) {
-            sid,
+            id,
             emails
         }
     }
