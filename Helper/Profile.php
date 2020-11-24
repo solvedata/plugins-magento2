@@ -77,7 +77,7 @@ class Profile
     }
 
     /**
-     * Get profile sid by email
+     * Get profile id by email
      *
      * @param string $email
      * @param int|null $websiteId
@@ -86,37 +86,37 @@ class Profile
      *
      * @throws \Exception
      */
-    public function getSidByEmail(string $email, int $websiteId): string
+    public function getProfileIdByEmail(string $email, int $websiteId): string
     {
-        $sid = $this->getRegistry(sprintf('%s_%s', $email, $websiteId));
-        if (!empty($sid)) {
-            return $sid;
+        $id = $this->getRegistry(sprintf('%s_%s', $email, $websiteId));
+        if (!empty($id)) {
+            return $id;
         }
         $profile = $this->profileRepository->create();
-        $sid = $profile->getSIdByEmail($email, $websiteId);
-        if (empty($sid)) {
+        $id = $profile->getProfileIdByEmail($email, $websiteId);
+        if (empty($id)) {
             throw new \Exception(sprintf(
-                'SolveData Profile sid is empty for "%s" email in "%d" website',
+                'SolveData Profile id is empty for "%s" email in "%d" website',
                 $email,
                 $websiteId
             ));
         }
 
-        return $sid;
+        return $id;
     }
 
     /**
-     * Save profile sid from Solve service
+     * Save profile id from Solve service
      *
      * @param string $email
-     * @param string $sid
+     * @param string $id
      * @param int $websiteId
      *
      * @return Profile
      *
      * @throws AlreadyExistsException
      */
-    public function saveSidByEmail(string $email, string $sid, int $websiteId): Profile
+    public function saveProfileIdByEmail(string $email, string $id, int $websiteId): Profile
     {
         if (!empty($this->getRegistry(sprintf('%s_%s', $email, $websiteId)))) {
             return $this;
@@ -127,10 +127,10 @@ class Profile
         }
 
         $profile->setEmail($email)
-            ->setSid($sid)
+            ->setSid($id)
             ->setWebsiteId($websiteId);
         $this->profileRepository->save($profile);
-        $this->setRegistry(sprintf('%s_%s', $email, $websiteId), $sid);
+        $this->setRegistry(sprintf('%s_%s', $email, $websiteId), $id);
 
         return $this;
     }

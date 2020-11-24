@@ -12,7 +12,7 @@ class ConvertCart extends MutationAbstract
     const QUERY = <<<'GRAPHQL'
 mutation convertCart($id: String!, $orderId: String, $provider: String!) {
     convertCart(id: $id, orderId: $orderId, provider: $provider) {
-        sid
+        profile_id
     }
 }
 GRAPHQL;

@@ -138,7 +138,7 @@ class PayloadConverter
     }
 
     /**
-     * Get profile sid by email and area data
+     * Get profile id by email and area data
      *
      * @param string $email
      * @param array $area
@@ -147,7 +147,7 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    protected function getProfileSid(string $email, array $area): string
+    protected function getProfileId(string $email, array $area): string
     {
         $website = $this->getWebsiteDataByArea($area);
         if (empty($website)) {
@@ -157,7 +157,7 @@ class PayloadConverter
             throw new \Exception('Website data is incorrect in area data');
         }
 
-        return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
+        return $this->profileHelper->getProfileIdByEmail($email, (int)$website['website_id']);
     }
 
     /**
@@ -402,9 +402,9 @@ class PayloadConverter
             }
         }
 
-        $sid = $this->getProfileSid($order['customer_email'], $area);
-        if (!empty($sid)) {
-            $data['sid'] = $sid;
+        $id = $this->getProfileId($order['customer_email'], $area);
+        if (!empty($id)) {
+            $data['profile_id'] = $id;
         }
 
         if (empty($order[OrderInterface::STATE])) {
@@ -606,7 +606,7 @@ class PayloadConverter
     {
         $data = [
             'id'         => $quote['entity_id'],
-            'sid'        => $this->getProfileSid($quote['customer_email'], $area),
+            'profile_id'        => $this->getProfileId($quote['customer_email'], $area),
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->prepareAttributesData($area)),

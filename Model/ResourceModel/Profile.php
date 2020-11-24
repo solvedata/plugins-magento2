@@ -41,7 +41,7 @@ class Profile extends AbstractDb
     }
 
     /**
-     * Get profile sid by email
+     * Get profile id by email
      *
      * @param string $email
      * @param int $websiteId
@@ -50,7 +50,7 @@ class Profile extends AbstractDb
      *
      * @throws LocalizedException
      */
-    public function getSIdByEmail(string $email, int $websiteId): ?string
+    public function getProfileIdByEmail(string $email, int $websiteId): ?string
     {
         $profile = $this->getByEmail($email, $websiteId);
         if (empty($profile)) {

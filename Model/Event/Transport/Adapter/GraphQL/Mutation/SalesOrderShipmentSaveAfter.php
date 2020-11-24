@@ -12,7 +12,7 @@ class SalesOrderShipmentSaveAfter extends MutationAbstract
     const QUERY = <<<'GRAPHQL'
 mutation create_or_update_order($input: CreateOrderInput!) {
     create_or_update_order(input: $input) {
-        sid
+        profile_id
     }
 }
 GRAPHQL;
