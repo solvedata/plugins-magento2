@@ -274,7 +274,7 @@ class Event extends AbstractModel
         while (!empty($eventsToProcess)) {
             $event = array_shift($eventsToProcess);
             $eventId = $event[ResourceModel::ENTITY_ID];
-            $events = array($events);
+            $events = array($event);
             $eventIds = array($eventId);
 
             try {
