@@ -16,6 +16,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
+use SolveData\Events\Model\Logger;
 
 class PayloadConverter
 {
@@ -53,6 +54,11 @@ class PayloadConverter
     protected $storeManager;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
      * @var array
      */
     protected $countries = [];
@@ -68,12 +74,14 @@ class PayloadConverter
         CountryFactory $countryFactory,
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        Logger $logger
     ) {
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
         $this->storeManager = $storeManager;
+        $this->logger = logger;
     }
 
     /**
@@ -149,15 +157,21 @@ class PayloadConverter
      */
     protected function getProfileSid(string $email, array $area): string
     {
-        $website = $this->getWebsiteDataByArea($area);
-        if (empty($website)) {
-            throw new \Exception('Website data is not exist in area data');
+        try {
+            $website = $this->getWebsiteDataByArea($area);
+            if (empty($website)) {
+                throw new \Exception('Website data is not exist in area data');
+            }
+            if (!is_array($website) || empty($website['website_id'])) {
+                throw new \Exception('Website data is incorrect in area data');
+            }
+    
+            return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to retrieve profile id for email', ["email" => $email]);
+            $this->logger->error($t);
+            return "";
         }
-        if (!is_array($website) || empty($website['website_id'])) {
-            throw new \Exception('Website data is incorrect in area data');
-        }
-
-        return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
     }
 
     /**
@@ -218,30 +232,36 @@ class PayloadConverter
      */
     public function convertAddressesData(array $addresses): array
     {
-        $data = [];
-        foreach ($addresses as $key => $address) {
-            $key = (string)$key;
-            $data[$key] = $this->convertAddressData($address);
-            if (empty($data[$key])) {
-                continue;
+        try {
+            $data = [];
+            foreach ($addresses as $key => $address) {
+                $key = (string)$key;
+                $data[$key] = $this->convertAddressData($address);
+                if (empty($data[$key])) {
+                    continue;
+                }
+
+                if (empty($address[AddressInterface::DEFAULT_BILLING])
+                    || empty($address[AddressInterface::DEFAULT_SHIPPING])
+                ) {
+                    continue;
+                }
+                // Create copy address data but with a different type
+                if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
+                    $addressType = $data[$key]['type'] == Address::TYPE_BILLING
+                        ? Address::TYPE_SHIPPING
+                        : Address::TYPE_BILLING;
+                    $data[$key . '_copy'] = $data[$key];
+                    $data[$key . '_copy']['type'] = $addressType;
+                }
             }
 
-            if (empty($address[AddressInterface::DEFAULT_BILLING])
-                || empty($address[AddressInterface::DEFAULT_SHIPPING])
-            ) {
-                continue;
-            }
-            // Create copy address data but with a different type
-            if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
-                $addressType = $data[$key]['type'] == Address::TYPE_BILLING
-                    ? Address::TYPE_SHIPPING
-                    : Address::TYPE_BILLING;
-                $data[$key . '_copy'] = $data[$key];
-                $data[$key . '_copy']['type'] = $addressType;
-            }
+            return array_values($data);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to convert addresses');
+            $this->logger->error($t);
+            return [];
         }
-
-        return array_values($data);
     }
 
     /**
