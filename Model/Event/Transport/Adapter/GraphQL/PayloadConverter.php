@@ -205,7 +205,7 @@ class PayloadConverter
      *
      * @return array
      */
-    protected function prepareAttributesData(array $area): array
+    public function prepareAttributesData(array $area): array
     {
         $data = [];
 
