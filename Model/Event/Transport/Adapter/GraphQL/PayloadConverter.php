@@ -207,13 +207,29 @@ class PayloadConverter
      */
     protected function prepareAttributesData(array $area): array
     {
-        $store = $this->getStoreDataByArea($area);
-        $website = $this->getWebsiteDataByArea($area);
+        $data = [];
 
-        return [
-            'store'   => !empty($store) ? $store['name'] : null,
-            'website' => !empty($website) ? $website['name'] : null,
-        ];
+        try {
+            $store = $this->getStoreDataByArea($area);
+            $website = $this->getWebsiteDataByArea($area);
+    
+            if (!empty($store) && !empty($store['name'])) {
+                $storeName = $store['name'];
+                $data["store: $storeName"] = $storeName;
+            }
+    
+            if (!empty($website) && !empty($website['name'])) {
+                $websiteName = $website['name'];
+                $data["website: $websiteName"] = $websiteName;
+            }
+    
+            return $data;
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to find store and/or website from area', ["area" => json_encode($area)]);
+            $this->logger->error($t);
+            
+            return $data;
+        }
     }
 
     public function getOrderProvider(array $area): string
