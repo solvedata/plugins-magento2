@@ -626,12 +626,18 @@ class PayloadConverter
     {
         $data = [
             'id'         => $quote['entity_id'],
-            'sid'        => $this->getProfileSid($quote['customer_email'], $area),
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->prepareAttributesData($area)),
             'provider'   => $this->getOrderProvider($area),
         ];
+
+        if (!empty($quote['customer_email'])) {
+            // Defensively handle a failed profile ID lookup in case
+            //  the event can be retroactively linked to a profile.
+            $profileId = $this->getProfileSid($quote['customer_email'], $area);
+            $data['sid'] = !empty($profileId) ? $profileId : null;
+        }
 
         return $data;
     }
