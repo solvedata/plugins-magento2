@@ -650,7 +650,7 @@ class PayloadConverter
 
         if (!empty($quote['customer_email'])) {
             // Defensively handle a failed profile ID lookup in case
-            //  the event can be retroactively linked to a profile.
+            //  the cart can be retroactively linked to a profile.
             $profileId = $this->getProfileSid($quote['customer_email'], $area);
             $data['sid'] = !empty($profileId) ? $profileId : null;
         }
