@@ -81,7 +81,7 @@ class PayloadConverter
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
         $this->storeManager = $storeManager;
-        $this->logger = logger;
+        $this->logger = $logger;
     }
 
     /**
