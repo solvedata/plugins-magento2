@@ -19,7 +19,7 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
-    const BATCH_SIZE = 1000;
+    const BATCH_SIZE = 100;
 
     /**
      * @var Config
