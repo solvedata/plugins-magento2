@@ -80,6 +80,7 @@ class CreateSolvedataProfileTable implements SchemaPatchInterface
             ['email', 'store_id'],
             ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
         )->addIndex(
+            // TODO remove this unique constraint as multiple emails can share the same profile ID.
             $connection->getIndexName(
                 ResourceModel::TABLE_NAME,
                 ['sid'],
