@@ -15,27 +15,46 @@ class Product extends InterestsAbstract
      */
     public function getMetaContent(): string
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $result = [];
+        try {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $result = [];
 
-        $product = $this->getProduct();
-        $categories = $product->getCategoryIds();
+            $product = $this->getProduct();
+            $categories = $product->getCategoryIds();
 
-        if (count($categories)>0) {
-            foreach($categories as $category){
-                $cat = $objectManager->create('Magento\Catalog\Model\Category')->load($category);
-                $result[] = $cat->getName();
-                $result[] = $cat->getMetaKeywords();
+            if (count($categories)>0) {
+                foreach($categories as $category){
+                    $cat = $objectManager->create('Magento\Catalog\Model\Category')->load($category);
+                    $result[] = $cat->getName();
+                    $result = array_merge(
+                        $result,
+                        $this->getMetaKeywordsAsArray($cat->getMetaKeywords())
+                    );
+                }
             }
-        }
 
-        if (!empty($product)) {
-            $result = array_merge(
-                $result,
-                $this->getMetaKeywordsAsArray($product->getMetaKeyword())
-            );
-        }
+            if (!empty($product)) {
+                $result = array_merge(
+                    $result,
+                    $this->getMetaKeywordsAsArray($product->getMetaKeyword())
+                );
+            }
 
-        return implode(',', $result);
+            $result = self::normalizeTags($result);
+
+            return implode(',', $result);
+        } catch (\Throwable $t) {
+            return '';
+        }
+    }
+
+    private static function normalizeTags(array $tags): array
+    {
+        $tags = array_map(function ($value) { return trim(strtolower($value)); }, $tags);
+        $tags = array_filter($tags, function ($value) { return !is_null($value) && $value !== ''; });
+        $tags = array_unique($tags);
+        sort($tags);
+
+        return $tags;
     }
 }
