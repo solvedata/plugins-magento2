@@ -158,7 +158,7 @@ class Event extends AbstractDb
      *
      * @throws LocalizedException
      */
-    public function updateEvents(array $events, array $requestResults, bool $isException = false): int
+    public function updateEvents(array $events, array $requestResults): int
     {
         foreach ($events as &$event) {
             $event['attempt'] = $event['attempt'] + 1;
