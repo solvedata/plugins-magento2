@@ -30,12 +30,16 @@ class Profile extends AbstractDb
      */
     public function getByEmail(string $email, int $websiteId)
     {
+        // Disregard the website ID when searching for a profile's ID.
+        // This is because the same profile can exist across multiple stores and
+        //  storing the website ID is unnecessary.
+
         $connection = $this->getConnection();
         $select = $connection
             ->select()
             ->from($this->getMainTable())
             ->where('email = ?', $email)
-            ->where('website_id = ?', $websiteId);
+            ->limit(1, 0); // Use any arbitrary profile ID for the email address
 
         return $connection->fetchRow($select);
     }
