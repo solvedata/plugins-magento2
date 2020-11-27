@@ -164,13 +164,19 @@ class Event extends AbstractDb
             $event['attempt'] = $event['attempt'] + 1;
             $event['finished_at'] = new \Zend_Db_Expr('NOW()');
             if (empty($requestResults[$event[self::ENTITY_ID]])) {
-                $event['status'] = $isException ? EventModel::STATUS_EXCEPTION : EventModel::STATUS_FAILED;
+                $event['status'] = EventModel::STATUS_FAILED;
                 continue;
             }
 
             $eventRequestResults = $requestResults[$event[self::ENTITY_ID]];
             $event['request'] = json_encode($eventRequestResults);
+
             foreach ($eventRequestResults as $requestResult) {
+                if (!empty($requestResult['exception'])) {
+                    $event['status'] = EventModel::STATUS_EXCEPTION;
+                    break;
+                }
+
                 $responseCode = $requestResult['response']['code'];
                 $event['response_code'] = $responseCode;
                 if ($responseCode == 200 || $responseCode == 201) {

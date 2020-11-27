@@ -263,6 +263,7 @@ class Event extends AbstractModel
      */
     public function sendEvents(): bool
     {
+        $cronId = md5(uniqid(strval(rand()), true));
         $resource = $this->getResource();
 
         # Grab a selection of events we need to send
@@ -279,27 +280,25 @@ class Event extends AbstractModel
 
             try {
                 $resource->beginTransaction();
-                $this->logger->debug('Starting processing event', ['event_entity_id' => $eventId]);
+                $this->logger->debug('Starting processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
 
                 $this->lockEventsToProcessing($eventIds);
                 $requestResults = $this->transport->send($events);
                 $this->updateEvents($events, $requestResults);
 
-                $this->logger->debug('Finished processing event', ['event_entity_id' => $eventId]);
+                $this->logger->debug('Finished processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
                 $resource->commit();
-            } catch (\Throwable $e) {
+            } catch (\Throwable $t) {
                 $resource->rollBack();
-                if (empty($event['request'])) {
-                    $event['request'] = json_encode([ "exception" => "$e"]);
-                }
-                $this->updateEvents($events, [], /* $isException = */ true);
 
-                $this->logger->debug('Error processing event', ['event_entity_id' => $eventId]);
-                $this->logger->critical($e);
+                $requestResults = [$eventId => [['exception' => "$t"]]];
+                $this->updateEvents($events, $requestResults);
 
-                return false;
+                $this->logger->debug('Error processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
+                $this->logger->critical($t);
             }
         }
+
         return true;
     }
 
