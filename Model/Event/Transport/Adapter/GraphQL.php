@@ -424,7 +424,7 @@ class GraphQL extends CurlAbstract
         }
         // Request IDs need to be more than 20 characters long.
         // uniqid("", true) returns at least a 23 character long string.
-        return uniqid( "S$store" . "E$entity" . "-" , true);
+        return uniqid( "S=$store" . ',' . "E=$entity" . ',' , true);
     }
 
     /**
