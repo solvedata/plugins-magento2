@@ -77,7 +77,7 @@ class Profile
     }
 
     /**
-     * Get profile sid by email
+     * Get profile id by email
      *
      * @param string $email
      * @param int|null $websiteId
@@ -86,39 +86,38 @@ class Profile
      *
      * @throws \Exception
      */
-    public function getSidByEmail(string $email, int $websiteId): string
+    public function getProfileIdByEmail(string $email, int $websiteId): string
     {
-        $sid = $this->getRegistry(sprintf('%s_%s', $email, $websiteId));
-        if (!empty($sid)) {
-            return $sid;
+        $id = $this->getRegistry($email);
+        if (!empty($id)) {
+            return $id;
         }
         $profile = $this->profileRepository->create();
-        $sid = $profile->getSIdByEmail($email, $websiteId);
-        if (empty($sid)) {
+        $id = $profile->getProfileIdByEmail($email, $websiteId);
+        if (empty($id)) {
             throw new \Exception(sprintf(
-                'SolveData Profile sid is empty for "%s" email in "%d" website',
-                $email,
-                $websiteId
+                'SolveData Profile id is empty for "%s" email',
+                $email
             ));
         }
 
-        return $sid;
+        return $id;
     }
 
     /**
-     * Save profile sid from Solve service
+     * Save profile id from Solve service
      *
      * @param string $email
-     * @param string $sid
+     * @param string $id
      * @param int $websiteId
      *
      * @return Profile
      *
      * @throws AlreadyExistsException
      */
-    public function saveSidByEmail(string $email, string $sid, int $websiteId): Profile
+    public function saveProfileIdByEmail(string $email, string $id, int $websiteId): Profile
     {
-        if (!empty($this->getRegistry(sprintf('%s_%s', $email, $websiteId)))) {
+        if (!empty($this->getRegistry($email))) {
             return $this;
         }
         $profile = $this->profileRepository->create();
@@ -126,11 +125,15 @@ class Profile
             return $this;
         }
 
+        // Known issue: Attempting to create a new Profile that contains a duplicate Profile ID may fail due to the
+        //      `solvedata_profile` table's unique constraint on the `sid` column.
+        // This can occur because multiple distinct email addresses can be associated with the same profile.
+
         $profile->setEmail($email)
-            ->setSid($sid)
+            ->setSid($id)
             ->setWebsiteId($websiteId);
         $this->profileRepository->save($profile);
-        $this->setRegistry(sprintf('%s_%s', $email, $websiteId), $sid);
+        $this->setRegistry($email, $id);
 
         return $this;
     }

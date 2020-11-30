@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace SolveData\Events\Model\Event\Transport\Adapter;
 
@@ -136,8 +136,8 @@ class GraphQL extends CurlAbstract
                 $response = $this->read();
                 $requestResult = [
                     'request' => [
-                        'url'        => $requestData['url'],
-                        'parameters' => urldecode($requestData['options'][CURLOPT_POSTFIELDS])
+                        'url' => $requestData['url'],
+                        'parameters' => urldecode($requestData['options'][CURLOPT_POSTFIELDS]),
                     ],
                     'response' => [
                         'body' => \Zend_Http_Response::extractBody($response),
@@ -324,7 +324,7 @@ class GraphQL extends CurlAbstract
      */
     protected function prepareEventMutation(array $event, string $mutationClass)
     {
-        $requestId = self::generateRequestId();
+        $requestId = self::generateRequestId($event);
         $this->logger->debug(sprintf(
             'Start preparing request for event #%d by mutation class %s with request id %s',
             $event[ResourceModel::ENTITY_ID],
@@ -345,7 +345,7 @@ class GraphQL extends CurlAbstract
         }
 
         $result = [
-            'url'     => $this->config->getAPIUrl($event['store_id']),
+            'url' => $this->config->getAPIUrl($event['store_id']),
             'options' => [
                 CURLOPT_HTTPHEADER => [
                     sprintf(
@@ -359,7 +359,7 @@ class GraphQL extends CurlAbstract
                     sprintf('x-client-version: solvedata/plugins-magento2 %s', $this->getExtensionVersion()),
                 ],
                 CURLOPT_POSTFIELDS => http_build_query([
-                    'query'     => $mutation->getQuery(),
+                    'query' => $mutation->getQuery(),
                     'variables' => json_encode($mutation->getVariables()),
                 ]),
             ],
@@ -386,20 +386,20 @@ class GraphQL extends CurlAbstract
     {
         try {
             $body = json_decode($body, true);
-            if (empty($body['data']['createOrUpdateProfile']['sid'])
+            if (empty($body['data']['createOrUpdateProfile']['id'])
                 || empty($body['data']['createOrUpdateProfile']['emails'])
             ) {
                 return $this;
             }
             $email = reset($body['data']['createOrUpdateProfile']['emails']);
             $this->logger->debug(sprintf(
-                'Save sid "%s" for customer %s',
-                $body['data']['createOrUpdateProfile']['sid'],
+                'Save id "%s" for customer %s',
+                $body['data']['createOrUpdateProfile']['id'],
                 $email
             ));
-            $this->profileHelper->saveSidByEmail(
+            $this->profileHelper->saveProfileIdByEmail(
                 $email,
-                $body['data']['createOrUpdateProfile']['sid'],
+                $body['data']['createOrUpdateProfile']['id'],
                 (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId()
             );
         } catch (\Throwable $t) {
@@ -414,11 +414,17 @@ class GraphQL extends CurlAbstract
      *
      * @return string
      */
-    private static function generateRequestId(): string
+    private static function generateRequestId(array $event): string
     {
-        // Use md5 to ensure that the resulting ID is at least 20 characters.
-        // Note this ID does not need to be cryptographic random hence the use of md5 & uniqid etc.
-        return md5(uniqid(strval(rand()), true));
+        $store = "-no-event-";
+        $entity = "-no-event-";
+        if (!empty($event)) {
+            $store = empty($event['store_id']) ? "-absent-" : $event['store_id'];
+            $entity = empty($event[ResourceModel::ENTITY_ID]) ? "-absent-" : $event[ResourceModel::ENTITY_ID];
+        }
+        // Request IDs need to be more than 20 characters long.
+        // uniqid("", true) returns at least a 23 character long string.
+        return uniqid( "S=$store" . ',' . "E=$entity" . ',' , true);
     }
 
     /**

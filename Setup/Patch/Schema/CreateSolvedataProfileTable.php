@@ -55,6 +55,7 @@ class CreateSolvedataProfileTable implements SchemaPatchInterface
             ],
             'Profile Email'
         )->addColumn(
+            // `sid` is the old name for Profile ID.
             'sid',
             Table::TYPE_TEXT,
             255,
@@ -80,6 +81,7 @@ class CreateSolvedataProfileTable implements SchemaPatchInterface
             ['email', 'store_id'],
             ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
         )->addIndex(
+            // TODO remove this unique constraint as multiple emails can share the same profile ID.
             $connection->getIndexName(
                 ResourceModel::TABLE_NAME,
                 ['sid'],

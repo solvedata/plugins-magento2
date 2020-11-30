@@ -19,7 +19,7 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
-    const BATCH_SIZE = 1000;
+    const BATCH_SIZE = 100;
 
     /**
      * @var Config
@@ -170,7 +170,13 @@ class Event extends AbstractDb
 
             $eventRequestResults = $requestResults[$event[self::ENTITY_ID]];
             $event['request'] = json_encode($eventRequestResults);
+
             foreach ($eventRequestResults as $requestResult) {
+                if (!empty($requestResult['exception'])) {
+                    $event['status'] = EventModel::STATUS_EXCEPTION;
+                    break;
+                }
+
                 $responseCode = $requestResult['response']['code'];
                 $event['response_code'] = $responseCode;
                 if ($responseCode == 200 || $responseCode == 201) {
