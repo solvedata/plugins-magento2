@@ -155,7 +155,7 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    protected function getProfileSid(string $email, array $area): string
+    protected function getProfileSid(string $email, array $area): ?string
     {
         try {
             $website = $this->getWebsiteDataByArea($area);
@@ -170,7 +170,7 @@ class PayloadConverter
         } catch (\Throwable $t) {
             $this->logger->debug('failed to retrieve profile id for email', ["email" => $email]);
             $this->logger->error($t);
-            return "";
+            return null;
         }
     }
 
