@@ -16,6 +16,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
+use SolveData\Events\Model\Logger;
 
 class PayloadConverter
 {
@@ -53,6 +54,11 @@ class PayloadConverter
     protected $storeManager;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
      * @var array
      */
     protected $countries = [];
@@ -68,12 +74,14 @@ class PayloadConverter
         CountryFactory $countryFactory,
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        Logger $logger
     ) {
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
         $this->storeManager = $storeManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -147,17 +155,23 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    protected function getProfileSid(string $email, array $area): string
+    protected function getProfileSid(string $email, array $area): ?string
     {
-        $website = $this->getWebsiteDataByArea($area);
-        if (empty($website)) {
-            throw new \Exception('Website data is not exist in area data');
+        try {
+            $website = $this->getWebsiteDataByArea($area);
+            if (empty($website)) {
+                throw new \Exception('Website data is not exist in area data');
+            }
+            if (!is_array($website) || empty($website['website_id'])) {
+                throw new \Exception('Website data is incorrect in area data');
+            }
+    
+            return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to retrieve profile id for email', ["email" => $email]);
+            $this->logger->error($t);
+            return null;
         }
-        if (!is_array($website) || empty($website['website_id'])) {
-            throw new \Exception('Website data is incorrect in area data');
-        }
-
-        return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
     }
 
     /**
@@ -191,15 +205,31 @@ class PayloadConverter
      *
      * @return array
      */
-    protected function prepareAttributesData(array $area): array
+    public function prepareAttributesData(array $area): array
     {
-        $store = $this->getStoreDataByArea($area);
-        $website = $this->getWebsiteDataByArea($area);
+        $data = [];
 
-        return [
-            'store'   => !empty($store) ? $store['name'] : null,
-            'website' => !empty($website) ? $website['name'] : null,
-        ];
+        try {
+            $store = $this->getStoreDataByArea($area);
+            $website = $this->getWebsiteDataByArea($area);
+    
+            if (!empty($store) && !empty($store['name'])) {
+                $storeName = $store['name'];
+                $data["store: $storeName"] = $storeName;
+            }
+    
+            if (!empty($website) && !empty($website['name'])) {
+                $websiteName = $website['name'];
+                $data["website: $websiteName"] = $websiteName;
+            }
+    
+            return $data;
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to find store and/or website from area', ["area" => json_encode($area)]);
+            $this->logger->error($t);
+            
+            return $data;
+        }
     }
 
     public function getOrderProvider(array $area): string
@@ -218,30 +248,36 @@ class PayloadConverter
      */
     public function convertAddressesData(array $addresses): array
     {
-        $data = [];
-        foreach ($addresses as $key => $address) {
-            $key = (string)$key;
-            $data[$key] = $this->convertAddressData($address);
-            if (empty($data[$key])) {
-                continue;
+        try {
+            $data = [];
+            foreach ($addresses as $key => $address) {
+                $key = (string)$key;
+                $data[$key] = $this->convertAddressData($address);
+                if (empty($data[$key])) {
+                    continue;
+                }
+
+                if (empty($address[AddressInterface::DEFAULT_BILLING])
+                    || empty($address[AddressInterface::DEFAULT_SHIPPING])
+                ) {
+                    continue;
+                }
+                // Create copy address data but with a different type
+                if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
+                    $addressType = $data[$key]['type'] == Address::TYPE_BILLING
+                        ? Address::TYPE_SHIPPING
+                        : Address::TYPE_BILLING;
+                    $data[$key . '_copy'] = $data[$key];
+                    $data[$key . '_copy']['type'] = $addressType;
+                }
             }
 
-            if (empty($address[AddressInterface::DEFAULT_BILLING])
-                || empty($address[AddressInterface::DEFAULT_SHIPPING])
-            ) {
-                continue;
-            }
-            // Create copy address data but with a different type
-            if ($address[AddressInterface::DEFAULT_BILLING] && $address[AddressInterface::DEFAULT_SHIPPING]) {
-                $addressType = $data[$key]['type'] == Address::TYPE_BILLING
-                    ? Address::TYPE_SHIPPING
-                    : Address::TYPE_BILLING;
-                $data[$key . '_copy'] = $data[$key];
-                $data[$key . '_copy']['type'] = $addressType;
-            }
+            return array_values($data);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to convert addresses');
+            $this->logger->error($t);
+            return [];
         }
-
-        return array_values($data);
     }
 
     /**
@@ -606,12 +642,18 @@ class PayloadConverter
     {
         $data = [
             'id'         => $quote['entity_id'],
-            'sid'        => $this->getProfileSid($quote['customer_email'], $area),
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->prepareAttributesData($area)),
             'provider'   => $this->getOrderProvider($area),
         ];
+
+        if (!empty($quote['customer_email'])) {
+            // Defensively handle a failed profile ID lookup in case
+            //  the cart can be retroactively linked to a profile.
+            $profileId = $this->getProfileSid($quote['customer_email'], $area);
+            $data['sid'] = !empty($profileId) ? $profileId : null;
+        }
 
         return $data;
     }
