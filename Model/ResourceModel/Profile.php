@@ -45,7 +45,7 @@ class Profile extends AbstractDb
     }
 
     /**
-     * Get profile sid by email
+     * Get profile id by email
      *
      * @param string $email
      * @param int $websiteId
@@ -54,13 +54,16 @@ class Profile extends AbstractDb
      *
      * @throws LocalizedException
      */
-    public function getSIdByEmail(string $email, int $websiteId): ?string
+    public function getProfileIdByEmail(string $email, int $websiteId): ?string
     {
         $profile = $this->getByEmail($email, $websiteId);
         if (empty($profile)) {
             return null;
         }
 
+        // Note that the `profile_id` is saved in the `sid` column.
+        // This is because sid was the old name for profile IDs and we
+        //  decided not to add a schema migration just to rename this column.
         return $profile['sid'];
     }
 }

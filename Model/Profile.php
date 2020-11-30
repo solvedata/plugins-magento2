@@ -41,15 +41,15 @@ class Profile extends AbstractModel
     }
 
     /**
-     * Get profile sid by email
+     * Get profile id by email
      *
      * @param string $email
      * @param int $websiteId
      *
      * @return string
      */
-    public function getSIdByEmail(string $email, int $websiteId): ?string
+    public function getProfileIdByEmail(string $email, int $websiteId): ?string
     {
-        return $this->getResource()->getSidByEmail($email, $websiteId);
+        return $this->getResource()->getProfileIdByEmail($email, $websiteId);
     }
 }

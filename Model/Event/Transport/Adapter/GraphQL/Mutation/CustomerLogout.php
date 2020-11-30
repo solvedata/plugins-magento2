@@ -9,7 +9,7 @@ class CustomerLogout extends MutationAbstract
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateProfile($input: ProfileInput!) {
     createOrUpdateProfile(input: $input) {
-        sid,
+        id,
         emails
     }
 }

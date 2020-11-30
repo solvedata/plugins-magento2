@@ -386,21 +386,21 @@ class GraphQL extends CurlAbstract
     {
         try {
             $body = json_decode($body, true);
-            if (empty($body['data']['createOrUpdateProfile']['sid'])
+            if (empty($body['data']['createOrUpdateProfile']['id'])
                 || empty($body['data']['createOrUpdateProfile']['emails'])
             ) {
                 return $this;
             }
             $email = reset($body['data']['createOrUpdateProfile']['emails']);
             $this->logger->debug(sprintf(
-                'Save sid "%s" for customer %s',
-                $body['data']['createOrUpdateProfile']['sid'],
+                'Save id "%s" for customer %s',
+                $body['data']['createOrUpdateProfile']['id'],
                 $email
             ));
-            $this->profileHelper->saveSidByEmail(
+            $this->profileHelper->saveProfileIdByEmail(
                 $email,
-                $body['data']['createOrUpdateProfile']['sid'],
-                (int) $this->storeManager->getStore($event['store_id'])->getWebsiteId()
+                $body['data']['createOrUpdateProfile']['id'],
+                (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId()
             );
         } catch (\Throwable $t) {
             $this->logger->error($t);

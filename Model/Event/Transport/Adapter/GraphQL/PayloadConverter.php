@@ -146,7 +146,7 @@ class PayloadConverter
     }
 
     /**
-     * Get profile sid by email and area data
+     * Get profile id by email and area data
      *
      * @param string $email
      * @param array $area
@@ -155,7 +155,7 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    protected function getProfileSid(string $email, array $area): ?string
+    protected function getProfileId(string $email, array $area): ?string
     {
         try {
             $website = $this->getWebsiteDataByArea($area);
@@ -166,7 +166,7 @@ class PayloadConverter
                 throw new \Exception('Website data is incorrect in area data');
             }
     
-            return $this->profileHelper->getSidByEmail($email, (int)$website['website_id']);
+            return $this->profileHelper->getProfileIdByEmail($email, (int)$website['website_id']);
         } catch (\Throwable $t) {
             $this->logger->debug('failed to retrieve profile id for email', ["email" => $email]);
             $this->logger->error($t);
@@ -438,9 +438,9 @@ class PayloadConverter
             }
         }
 
-        $sid = $this->getProfileSid($order['customer_email'], $area);
-        if (!empty($sid)) {
-            $data['sid'] = $sid;
+        $id = $this->getProfileId($order['customer_email'], $area);
+        if (!empty($id)) {
+            $data['profile_id'] = $id;
         }
 
         if (empty($order[OrderInterface::STATE])) {
@@ -651,8 +651,8 @@ class PayloadConverter
         if (!empty($quote['customer_email'])) {
             // Defensively handle a failed profile ID lookup in case
             //  the cart can be retroactively linked to a profile.
-            $profileId = $this->getProfileSid($quote['customer_email'], $area);
-            $data['sid'] = !empty($profileId) ? $profileId : null;
+            $profileId = $this->getProfileId($quote['customer_email'], $area);
+            $data['profile_id'] = !empty($profileId) ? $profileId : null;
         }
 
         return $data;

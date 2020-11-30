@@ -9,7 +9,7 @@ class CheckoutCartSaveAfter extends MutationAbstract
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateCart($input: CartInput!) {
     createOrUpdateCart(input: $input) {
-        sid
+        profile_id
     }
 }
 GRAPHQL;

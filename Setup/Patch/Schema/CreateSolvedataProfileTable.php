@@ -55,6 +55,7 @@ class CreateSolvedataProfileTable implements SchemaPatchInterface
             ],
             'Profile Email'
         )->addColumn(
+            // `sid` is the old name for Profile ID.
             'sid',
             Table::TYPE_TEXT,
             255,
