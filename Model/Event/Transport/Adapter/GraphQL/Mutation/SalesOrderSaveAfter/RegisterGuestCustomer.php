@@ -50,17 +50,16 @@ GRAPHQL;
         $event = $this->getEvent();
         $payload = $event['payload'];
 
+        $order = $payload['order'];
+        $area = $payload['area'];
+
         $input = [
-            'email' => $payload['order']['customer_email']
+            'email' => $order['customer_email'],
+            'attributes' => json_encode($this->payloadConverter->prepareAttributesData($area))
         ];
-        if (!empty($payload['order']['addresses'])) {
-            $input['addresses'] = $this->payloadConverter->convertAddressesData($payload['order']['addresses']);
-            $address = array_shift($payload['order']['addresses']);
-            $input += [
-                'firstName' => $address['firstname'],
-                'lastName'  => $address['lastname'],
-                'fullName'  => $address['firstname'] . ' ' . $address['lastname'],
-            ];
+
+        if (!empty($order['addresses'])) {
+            $input['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
         }
 
         return ['input' => $input];
