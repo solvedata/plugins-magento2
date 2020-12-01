@@ -587,11 +587,18 @@ class PayloadConverter
                 continue;
             }
 
+            $itemAttributes = [];
+
+            if (!empty($item['item_id'])) {
+                $itemAttributes['magento_item_id'] = $item['item_id'];
+            }
+
             if ($item['product_type'] == Configurable::TYPE_CODE) {
-                $itemAttributes = $this->prepareConfigurableProductAttributesData($item);
-                if (!empty($itemAttributes)) {
-                    $data[$key]['itemAttributes'] = json_encode($itemAttributes);
-                }
+                $itemAttributes = array_merge($itemAttributes, $this->prepareConfigurableProductAttributesData($item));
+            }
+
+            if (!empty($itemAttributes)) {
+                $data[$key]['itemAttributes'] = json_encode($itemAttributes);
             }
 
             /**
