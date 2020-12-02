@@ -8,6 +8,7 @@ use Magento\Checkout\Model\Cart;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Exception\NoSuchEntityException;
 use SolveData\Events\Model\Event\RegisterHandler\EventAbstract;
+use SolveData\Events\Model\Config;
 
 class CartSave extends EventAbstract
 {
@@ -25,10 +26,12 @@ class CartSave extends EventAbstract
         if (!parent::isAllowed($observer)) {
             return false;
         }
+        
         /** @var Cart $cart */
         $cart = $observer->getEvent()->getCart();
+        $email = $cart->getQuote()->getCustomerEmail();
 
-        return !empty($cart->getQuote()->getCustomerEmail());
+        return !empty($email) || $this->config->isAnonymousCartsEnabled();
     }
 
     /**
