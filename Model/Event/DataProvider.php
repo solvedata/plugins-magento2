@@ -94,7 +94,7 @@ class DataProvider extends ModifierPoolDataProvider
         /** @var $event Event */
         foreach ($events as $event) {
             $event->setStatus(Event::STATUSES[$event->getStatus()]);
-            $event->setStoreId($storesArray[$event->getStoreId()]);
+            $event->setStoreId($storesArray[$event->getStoreId()] ?? null);
             $this->loadedData[$event->getId()] = $event->getData();
         }
 
