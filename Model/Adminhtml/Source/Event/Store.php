@@ -80,7 +80,10 @@ class Store implements OptionSourceInterface
     {
         $options = [];
 
-        foreach ($this->storeManager->getStores() as $store) {
+        $withDefaultStore = true;
+        $stores = $this->storeManager->getStores($withDefaultStore);
+
+        foreach ($stores as $store) {
             $options[] = [
                 'value' => $store->getId(),
                 'label' => sprintf(

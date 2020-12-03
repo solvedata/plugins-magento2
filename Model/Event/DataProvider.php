@@ -94,7 +94,13 @@ class DataProvider extends ModifierPoolDataProvider
         /** @var $event Event */
         foreach ($events as $event) {
             $event->setStatus(Event::STATUSES[$event->getStatus()]);
-            $event->setStoreId($storesArray[$event->getStoreId()]);
+
+            // Defensively set the StoreId field to the store's human readable label (see EventStoreSource)
+            //  if the store exists.
+            if (array_key_exists($event->getStoreId(), $storesArray)) {
+                $event->setStoreId($storesArray[$event->getStoreId()]);
+            }
+            
             $this->loadedData[$event->getId()] = $event->getData();
         }
 
