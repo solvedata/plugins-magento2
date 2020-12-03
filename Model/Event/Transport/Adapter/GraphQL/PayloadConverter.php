@@ -489,6 +489,18 @@ class PayloadConverter
                     $data['status'] = self::ORDER_STATUS_PROCESSED;
                     break;
                 }
+
+                // Work around for the Payment express extension which dispatches a `sales_order_save_after` event
+                //  momentarily after the canceled event.
+                // If we didn't have this work around the order would be un-canceled in Solve moments after it was canceled.
+                if ($order[OrderInterface::STATE] == Order::STATE_PENDING &&
+                    $order[OrderInterface::STATUS] == "paymentexpress_failed") {
+
+                    $data['paymentStatus'] = self::PAYMENT_STATUS_CANCELED;
+                    $data['status'] = self::ORDER_STATUS_CANCELED;
+                    break;
+                }
+                
                 $data['paymentStatus'] = self::PAYMENT_STATUS_PENDING;
                 $data['status'] = self::ORDER_STATUS_PROCESSED;
                 break;
