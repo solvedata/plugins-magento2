@@ -606,7 +606,7 @@ class PayloadConverter
             }
 
             if ($item['product_type'] == Configurable::TYPE_CODE) {
-                $itemAttributes = array_merge($itemAttributes, $this->prepareConfigurableProductAttributesData($item));
+                $itemAttributes = $itemAttributes + $this->prepareConfigurableProductAttributesData($item);
             }
 
             if (!empty($itemAttributes)) {
