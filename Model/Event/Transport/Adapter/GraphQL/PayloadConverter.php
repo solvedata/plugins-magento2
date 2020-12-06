@@ -599,19 +599,18 @@ class PayloadConverter
                 continue;
             }
 
-            $itemAttributes = [];
-
-            if (!empty($item['item_id'])) {
-                $itemAttributes['magento_item_id'] = $item['item_id'];
-            }
+            $itemAttributes = [
+                'magento_item_id' => $item['item_id'] ?? null,
+                'magento_original_price' => $item['original_price'] ?? null,
+                'magento_final_price' => $item['final_price'] ?? null,
+                'magento_price' => $item['price'] ?? null,
+            ];
 
             if ($item['product_type'] == Configurable::TYPE_CODE) {
                 $itemAttributes = $itemAttributes + $this->prepareConfigurableProductAttributesData($item);
             }
 
-            if (!empty($itemAttributes)) {
-                $data[$key]['itemAttributes'] = json_encode($itemAttributes);
-            }
+            $data[$key]['itemAttributes'] = json_encode($itemAttributes);
 
             /**
              * Fix because price is NULL in quote item
