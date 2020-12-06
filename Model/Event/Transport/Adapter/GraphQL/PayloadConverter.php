@@ -248,7 +248,7 @@ class PayloadConverter
             try {
                 $giftCards = json_decode($order['gift_cards'], true);
                 $giftCards = array_map(function ($giftCart) {
-                    // Pick the subset of fields we are intrested in so
+                    // Pick the subset of fields we are interested in so
                     //  we don't inadvertently map across the gift card's
                     //  code in case it has remaining balance.
                     return [
