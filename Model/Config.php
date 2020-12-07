@@ -16,6 +16,8 @@ class Config
     const XML_PATH_ENABLED_EVENTS                = 'solvedata_events/general/enabled_events';
     const XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS = 'solvedata_events/general/enabled_anonymous_cart_events';
     const XML_PATH_DEBUG                         = 'solvedata_events/general/debug';
+    const XML_PATH_CRON_BATCH_SIZE               = 'solvedata_events/general/cron_batch_size';
+    const XML_PATH_TRANSACTION_BATCH_SIZE        = 'solvedata_events/general/transaction_batch_size';
     const XML_PATH_SENTRY_DSN                    = 'solvedata_events/general/sentry_dsn';
     const XML_PATH_EVENT_RETENTION_PERIOD        = 'solvedata_events/general/event_retention_period';
     const XML_PATH_API_URL                       = 'solvedata_events/api/url';
@@ -134,6 +136,46 @@ class Config
             ScopeInterface::SCOPE_STORE,
             $store
         );
+    }
+
+    /**
+     * Get cron batch size
+     *
+     * @param integer|null $store
+     *
+     * @return int
+     */
+    public function getCronBatchSize($store = null): int
+    {
+        try {
+            return (int)$this->scopeConfig->getValue(
+                self::XML_PATH_CRON_BATCH_SIZE,
+                ScopeInterface::SCOPE_STORE,
+                $store
+            );
+        } catch (\Throwable $t) {
+            return 100;
+        }
+    }
+
+    /**
+     * Get transaction batch size
+     *
+     * @param integer|null $store
+     *
+     * @return int
+     */
+    public function getTransactionBatchSize($store = null): int
+    {
+        try {
+            return (int)$this->scopeConfig->getValue(
+                self::XML_PATH_TRANSACTION_BATCH_SIZE,
+                ScopeInterface::SCOPE_STORE,
+                $store
+            );
+        } catch (\Throwable $t) {
+            return 10;
+        }
     }
 
     public function getSentryDsn($store = null): string

@@ -272,21 +272,21 @@ class Event extends AbstractModel
             return false;
         }
 
+        $transactionBatchSize = $this->config->getTransactionBatchSize();
+
         while (!empty($eventsToProcess)) {
-            $event = array_shift($eventsToProcess);
-            $eventId = $event[ResourceModel::ENTITY_ID];
-            $events = array($event);
-            $eventIds = array($eventId);
+            $events = array_slice($eventsToProcess, 0, $transactionBatchSize);            
+            $eventIds = array_column($events, ResourceModel::ENTITY_ID);
 
             try {
                 $resource->beginTransaction();
-                $this->logger->debug('Starting processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
+                $this->logger->debug('Starting processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
 
                 $this->lockEventsToProcessing($eventIds);
                 $requestResults = $this->transport->send($events);
                 $this->updateEvents($events, $requestResults);
 
-                $this->logger->debug('Finished processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
+                $this->logger->debug('Finished processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
                 $resource->commit();
             } catch (\Throwable $t) {
                 $resource->rollBack();
@@ -294,9 +294,11 @@ class Event extends AbstractModel
                 $requestResults = [$eventId => [['exception' => "$t"]]];
                 $this->updateEvents($events, $requestResults);
 
-                $this->logger->debug('Error processing event', ['event_entity_id' => $eventId, 'cron_id' => $cronId]);
+                $this->logger->debug('Error processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
                 $this->logger->critical($t);
             }
+
+            $eventsToProcess = array_slice($eventsToProcess, $transactionBatchSize);
         }
 
         return true;
