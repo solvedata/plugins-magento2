@@ -19,8 +19,6 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
-    const BATCH_SIZE = 100;
-
     /**
      * @var Config
      */
@@ -81,7 +79,7 @@ class Event extends AbstractDb
             ->order('created_at ' . Select::SQL_ASC)
             // Use the auto-incrementing ID as a tiebreaker since the datetime only use second-level precision
             ->order('id ' . Select::SQL_ASC)
-            ->limit(self::BATCH_SIZE);
+            ->limit($this->config->getCronBatchSize());
 
         return $connection->fetchAll($select);
     }

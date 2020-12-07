@@ -36,6 +36,16 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
+                <field id="cron_batch_size" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cron batch size</label>
+                    <frontend_class>validate-number</frontend_class>
+                    <comment>Number of events for a cron task to process as a batch from the events table.</comment>
+                </field>
+                <field id="transaction_batch_size" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Transaction batch size</label>
+                    <frontend_class>validate-number</frontend_class>
+                    <comment>Number of events to process at once in a DB transaction.</comment>
+                </field>
                 <field id="sentry_dsn" translate="label" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sentry DSN</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
