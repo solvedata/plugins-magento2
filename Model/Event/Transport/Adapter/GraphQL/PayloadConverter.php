@@ -232,6 +232,42 @@ class PayloadConverter
         }
     }
 
+    /**
+     * Prepare and return attributes data for orders
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    private function orderAttributes(array $order, array $area): array
+    {
+        $attributes = $this->prepareAttributesData($area);
+
+        if (!empty($order['gift_cards'])) {
+            try {
+                $giftCards = json_decode($order['gift_cards'], true);
+                $giftCards = array_map(function ($giftCart) {
+                    // Pick the subset of fields we are interested in so
+                    //  we don't inadvertently map across the gift card's
+                    //  code in case it has remaining balance.
+                    return [
+                        'id' => $giftCart['i'] ?? null,
+                        'amount' => $giftCart['a'] ?? null,
+                        'authorized' => $giftCart['authorized'] ?? null,
+                        'balance' => $giftCart['ba'] ?? null,
+                    ];
+                }, $giftCards);
+                $attributes['gift_cards'] = json_encode($giftCards);
+            } catch (\Throwable $t) {
+                $this->logger->debug('failed to map gift card(s) in order attributes');
+                $this->logger->error($t);
+            }
+        }
+
+        return $attributes;
+    }
+
     public function getOrderProvider(array $area): string
     {
         $website = $this->getWebsiteDataByArea($area);
@@ -405,21 +441,8 @@ class PayloadConverter
             'items'           => $this->convertItemsData($allVisibleItems),
             'storeIdentifier' => (string)$order[OrderInterface::STORE_ID],
             'channel'         => self::CHANNEL_WEB,
-            'adjustments'     => [
-                [
-                    'amount'      => sprintf('%.4F', $order[OrderInterface::TAX_AMOUNT]),
-                    'description' => 'Tax amount',
-                ],
-                [
-                    'amount'      => sprintf('%.4F', $order[OrderInterface::DISCOUNT_AMOUNT]),
-                    'description' => 'Discount amount',
-                ],
-                [
-                    'amount'      => sprintf('%.4F', $order[OrderInterface::SHIPPING_AMOUNT]),
-                    'description' => 'Shipping amount',
-                ],
-            ],
-            'attributes'      => json_encode($this->prepareAttributesData($area)),
+            'adjustments'     => $this->prepareOrderAdjustments($order),
+            'attributes'      => json_encode($this->orderAttributes($order, $area)),
             'provider'        => $this->getOrderProvider($area),
         ];
         if (!empty($order['created_at'])) {
@@ -507,6 +530,42 @@ class PayloadConverter
         }
 
         return $data;
+    }
+
+    /**
+     * Return Solve's order adjustments for a Magento order
+     *
+     * @param array $order
+     *
+     * @return array
+     */
+    private function prepareOrderAdjustments(array $order): array
+    {
+        $adjustments = [];
+
+        if (!empty($order['gift_cards_amount'])) {
+            $adjustments[] = [
+                'amount'      => sprintf('-%.4F', $order['gift_cards_amount']),
+                'description' => 'Gift card',
+            ];
+        }
+        
+        $adjustments = array_merge($adjustments, [
+            [
+                'amount'      => sprintf('%.4F', $order[OrderInterface::TAX_AMOUNT]),
+                'description' => 'Tax amount',
+            ],
+            [
+                'amount'      => sprintf('%.4F', $order[OrderInterface::DISCOUNT_AMOUNT]),
+                'description' => 'Discount amount',
+            ],
+            [
+                'amount'      => sprintf('%.4F', $order[OrderInterface::SHIPPING_AMOUNT]),
+                'description' => 'Shipping amount',
+            ],
+        ]);
+
+        return $adjustments;
     }
 
     /**
