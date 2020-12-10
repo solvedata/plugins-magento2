@@ -291,7 +291,8 @@ class Event extends AbstractModel
             } catch (\Throwable $t) {
                 $resource->rollBack();
 
-                $requestResults = [$eventId => [['exception' => "$t"]]];
+                $errorResult = [['exception' => "$t"]];
+                $requestResults = array_fill_keys($eventIds, $errorResult);
                 $this->updateEvents($events, $requestResults);
 
                 $this->logger->debug('Error processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);

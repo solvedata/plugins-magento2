@@ -150,7 +150,8 @@ class GraphQL extends CurlAbstract
                 $this->afterRequest($event, $requestResult['response']['body']);
             }
         } catch (\Throwable $t) {
-            $this->logger->critical($t);
+            $this->logger->error($t);
+            $result[] = ['exception' => "$t"];
         }
         $this->logger->debug(sprintf(
             'Request result: %s',
