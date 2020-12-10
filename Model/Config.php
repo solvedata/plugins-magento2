@@ -23,7 +23,6 @@ class Config
     const XML_PATH_API_URL                       = 'solvedata_events/api/url';
     const XML_PATH_API_KEY                       = 'solvedata_events/api/key';
     const XML_PATH_PASSWORD                      = 'solvedata_events/api/password';
-    const XML_PATH_MASS_SEND_REQUESTS            = 'solvedata_events/api/mass_send_requests';
     const XML_PATH_MAX_ATTEMPT_COUNT             = 'solvedata_events/api/max_attempt_count';
     const XML_PATH_ATTEMPT_INTERVAL              = 'solvedata_events/api/attempt_interval';
     const XML_PATH_SDK_IS_ENABLED                = 'solvedata_events/sdk/enabled';
@@ -281,22 +280,6 @@ class Config
     {
         return (int)$this->scopeConfig->getValue(
             self::XML_PATH_ATTEMPT_INTERVAL,
-            ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    /**
-     * Get mass send requests flag
-     *
-     * @param null $store
-     *
-     * @return bool
-     */
-    public function getMassSendRequests($store = null): bool
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_MASS_SEND_REQUESTS,
             ScopeInterface::SCOPE_STORE,
             $store
         );
