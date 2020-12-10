@@ -194,14 +194,15 @@ class Event extends AbstractDb
                     $event['status'] = EventModel::STATUS_COMPLETED;
                     continue;
                 }
-                if (($responseCode == 400 || $responseCode >= 500)
-                    && $event['attempt'] < $this->config->getMaxAttemptCount()
-                ) {
-                    $this->logger->warning(sprintf(
-                        'GraphQL response had an unsuccessful HTTP status code %d',
-                        $responseCode
-                    ));
 
+                $this->logger->error(sprintf('GraphQL response had an unsuccessful HTTP status code %d', $responseCode));
+
+                // We don't retry on 429 (Too Many Requests) because we would like to avoid a retry storm
+                //  until we have implemented proper backoff logic.
+                $retryableStatusCode = $responseCode == 409 || $responseCode >= 500;
+                $exceededMaxAttempts = $event['attempt'] >= $this->config->getMaxAttemptCount();
+                
+                if ($retryableStatusCode && !$exceededMaxAttempts) {
                     $event['status'] = EventModel::STATUS_RETRY;
                     $event['scheduled_at'] = new \Zend_Db_Expr(sprintf(
                         'DATE_ADD(NOW(), INTERVAL %d MINUTE)',
@@ -209,6 +210,7 @@ class Event extends AbstractDb
                     ));
                     break;
                 }
+                
                 $event['status'] = EventModel::STATUS_FAILED;
                 break;
             }
