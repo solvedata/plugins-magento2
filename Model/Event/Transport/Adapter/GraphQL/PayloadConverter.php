@@ -25,7 +25,6 @@ class PayloadConverter
 
     const PAYMENT_STATUS_PENDING  = 'PENDING';
     const PAYMENT_STATUS_PAID     = 'PAID';
-    const PAYMENT_STATUS_REFUNDED = 'REFUNDED';
     const PAYMENT_STATUS_CANCELED = 'CANCELED';
 
     const ORDER_STATUS_CREATED   = 'CREATED';
@@ -468,7 +467,6 @@ class PayloadConverter
 
         if (empty($order[OrderInterface::STATE])) {
             if (!empty($order[Order::TOTAL_REFUNDED])) {
-                $data['paymentStatus'] = self::PAYMENT_STATUS_REFUNDED;
                 $data['status'] = self::ORDER_STATUS_RETURNED;
 
                 return $data;
@@ -490,7 +488,6 @@ class PayloadConverter
                 $data['status'] = self::ORDER_STATUS_CREATED;
                 break;
             case Order::STATE_CLOSED:
-                $data['paymentStatus'] = self::PAYMENT_STATUS_REFUNDED;
                 $data['status'] = self::ORDER_STATUS_RETURNED;
                 break;
             case Order::STATE_CANCELED:
@@ -503,7 +500,6 @@ class PayloadConverter
                 break;
             default:
                 if (!empty($order[OrderInterface::TOTAL_REFUNDED])) {
-                    $data['paymentStatus'] = self::PAYMENT_STATUS_REFUNDED;
                     $data['status'] = self::ORDER_STATUS_RETURNED;
                     break;
                 }
