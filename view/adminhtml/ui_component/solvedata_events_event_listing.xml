@@ -8,6 +8,15 @@
         <item name="spinner" xsi:type="string">spinner_columns</item>
     </argument>
     <listingToolbar name="listing_top">
+        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
+            <action name="solvedata_events_resend_event">
+                <settings>
+                    <url path="solvedata_events/event/resendEvent"/>
+                    <type>solvedata_events_resend_event</type>
+                    <label translate="true">Resend event(s)</label>
+                </settings>
+            </action>
+        </massaction>
         <argument name="data" xsi:type="array">
             <item name="config" xsi:type="array">
                 <item name="sticky" xsi:type="boolean">false</item>
@@ -36,6 +45,11 @@
         </argument>
     </dataSource>
     <columns name="spinner_columns">
+         <selectionsColumn name="ids">
+            <settings>
+                <indexField>id</indexField>
+            </settings>
+        </selectionsColumn>
         <column name="id">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
@@ -149,7 +163,7 @@
         </column>
         <actionsColumn name="actions" class="SolveData\Events\Ui\Component\Listing\Columns\Actions">
             <settings>
-                <label translate="true">Actions</label>
+                <label translate="true">Details</label>
             </settings>
         </actionsColumn>
     </columns>
