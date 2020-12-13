@@ -163,7 +163,7 @@
         </column>
         <actionsColumn name="actions" class="SolveData\Events\Ui\Component\Listing\Columns\Actions">
             <settings>
-                <label translate="true">Details</label>
+                <label translate="true">Actions</label>
             </settings>
         </actionsColumn>
     </columns>
