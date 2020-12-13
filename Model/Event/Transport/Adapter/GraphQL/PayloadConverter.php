@@ -13,6 +13,7 @@ use Magento\Directory\Model\CountryFactory;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\ProductMetadata;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
@@ -199,6 +200,18 @@ class PayloadConverter
     }
 
     /**
+     * Get payment data for an order
+     *
+     * @param array $order
+     *
+     * @return array|null
+     */
+    public function getOrderPaymentData(array $order): ?array
+    {
+        return $this->getDataObjectArrayByKey($order, 'payment');
+    }
+
+    /**
      * Prepare and return attributes data
      *
      * @param array $area
@@ -263,6 +276,25 @@ class PayloadConverter
                 $this->logger->debug('failed to map gift card(s) in order attributes');
                 $this->logger->error($t);
             }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Prepare and return attributes data for payments
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    private function paymentAndReturnAttributes(array $payment, array $area): array
+    {
+        $attributes = $this->prepareAttributesData($area);
+
+        if (!empty($payment[OrderPaymentInterface::METHOD])) {
+            $attributes['method'] = $payment[OrderPaymentInterface::METHOD];
         }
 
         return $attributes;
@@ -528,6 +560,56 @@ class PayloadConverter
                 $data['status'] = self::ORDER_STATUS_PROCESSED;
                 break;
         }
+
+        return $data;
+    }
+
+    /**
+     * Return the input to create a Solve payment in GraphQL from an order's payment data.
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertPaymentData(array $order, array $area): array
+    {
+        $payment = $this->getOrderPaymentData($order);
+        $data = [
+            'id'         => $payment[OrderPaymentInterface::ENTITY_ID],
+            'order_id'   => $order[OrderInterface::INCREMENT_ID],
+            'provider'   => $this->getOrderProvider($area),
+            'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
+            'attributes' => json_encode($this->paymentAndReturnAttributes($payment, $area)),
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Return the input to create a Solve return in GraphQL from an order's payment data.
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertReturnData(array $order, array $area): array
+    {
+        $payment = $this->getOrderPaymentData($order);
+        $data = [
+            'id'            => $payment[OrderPaymentInterface::ENTITY_ID],
+            'order_id'      => $order[OrderInterface::INCREMENT_ID],
+            'provider'      => $this->getOrderProvider($area),
+            'return_reason' => 'Refund',
+            'adjustments'   => [
+                [
+                    'amount'      => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_REFUNDED]),
+                    'description' => 'Refund',
+                ]
+            ],
+            'attributes'  => json_encode($this->paymentAndReturnAttributes($payment, $area)),
+        ];
 
         return $data;
     }
