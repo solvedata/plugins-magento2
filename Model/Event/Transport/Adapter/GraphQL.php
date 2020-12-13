@@ -84,10 +84,22 @@ class GraphQL extends CurlAbstract
     {
         $results = [];
         foreach ($events as $event) {
-            $results[$event[ResourceModel::ENTITY_ID]] = $this->request($event);
+            $results[$event[ResourceModel::ENTITY_ID]] = $this->send($event);
         }
 
         return $results;
+    }
+
+    /**
+     * Send event
+     *
+     * @param array $event
+     *
+     * @return array
+     */
+    public function send(array $event)
+    {
+        return $this->request($event);
     }
 
     /**
