@@ -15,7 +15,6 @@
             <api>
                 <key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
                 <password backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
-                <mass_send_requests>1</mass_send_requests>
                 <max_attempt_count>3</max_attempt_count>
                 <attempt_interval>1</attempt_interval>
             </api>

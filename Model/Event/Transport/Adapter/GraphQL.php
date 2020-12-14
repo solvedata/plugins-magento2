@@ -82,10 +82,6 @@ class GraphQL extends CurlAbstract
      */
     public function sendBulk(array $events): array
     {
-        if ($this->config->getMassSendRequests()) {
-            return $this->massRequest($events);
-        }
-
         $results = [];
         foreach ($events as $event) {
             $results[$event[ResourceModel::ENTITY_ID]] = $this->send($event);
