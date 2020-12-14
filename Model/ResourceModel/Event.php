@@ -19,6 +19,8 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
+    const PURGE_HISTORICAL_EVENTS_BATCH_SIZE = 1000;
+
     /**
      * @var Config
      */
@@ -97,15 +99,29 @@ class Event extends AbstractDb
     {
         $connection = $this->getConnection();
 
-        // Delete all rows with a `created_at` time older than the retention period threshold time.
+        // Delete a batch of rows with their `created_at` time older than the retention period threshold time.
         //
         // Note that if PHP & MSQL have been configured with different timezones there is the
         //      possibility that this logic will be off up to ~1 day.
         // This isn't too concerning because the retention period is somewhat arbitrary and will be a
         //      long period like 7 days or 1 month.
-        $deletedRows = $connection
-            ->delete($this->getMainTable(), ['created_at < ?' => $purgeOlderThan]);
-        return $deletedRows;
+
+        $select = $connection
+            ->select()
+            ->from($this->getMainTable())
+            ->where('created_at < ?', $purgeOlderThan)
+            ->order('created_at ' . Select::SQL_ASC)
+            ->limit(static::PURGE_HISTORICAL_EVENTS_BATCH_SIZE);
+        
+        // Reimplement the connection's `deleteFromSelect` function.
+        // See https://github.com/magento/magento2/blob/2.3.5/lib/internal/Magento/Framework/DB/Adapter/Pdo/Mysql.php#L3647
+        // This is because this function was assembling an invalid MySQL DELETE query.
+        $select->reset(\Magento\Framework\DB\Select::DISTINCT);
+        $select->reset(\Magento\Framework\DB\Select::COLUMNS);
+        $query = sprintf('DELETE %s', $select->assemble());
+
+        $result = $connection->query($query);
+        return $result->rowCount();
     }
 
     /**
