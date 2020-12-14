@@ -19,6 +19,8 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
+    const PURGE_HISTORICAL_EVENTS_BATCH_SIZE = 1000;
+
     /**
      * @var Config
      */
@@ -97,14 +99,16 @@ class Event extends AbstractDb
     {
         $connection = $this->getConnection();
 
-        // Delete all rows with a `created_at` time older than the retention period threshold time.
+        // Delete rows with a `created_at` time older than the retention period threshold time.
         //
         // Note that if PHP & MSQL have been configured with different timezones there is the
         //      possibility that this logic will be off up to ~1 day.
         // This isn't too concerning because the retention period is somewhat arbitrary and will be a
         //      long period like 7 days or 1 month.
         $deletedRows = $connection
-            ->delete($this->getMainTable(), ['created_at < ?' => $purgeOlderThan]);
+            ->delete($this->getMainTable(), ['created_at < ?' => $purgeOlderThan])
+            ->order('id ' . Select::SQL_ASC)
+            ->limit(static::PURGE_HISTORICAL_EVENTS_BATCH_SIZE);
         return $deletedRows;
     }
 
