@@ -13,6 +13,7 @@ use Magento\Directory\Model\CountryFactory;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\ProductMetadata;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
@@ -22,10 +23,6 @@ class PayloadConverter
 {
     const PROVIDER = ProductMetadata::PRODUCT_NAME;
     const CHANNEL_WEB = 'WEB';
-
-    const PAYMENT_STATUS_PENDING  = 'PENDING';
-    const PAYMENT_STATUS_PAID     = 'PAID';
-    const PAYMENT_STATUS_CANCELED = 'CANCELED';
 
     const ORDER_STATUS_CREATED   = 'CREATED';
     const ORDER_STATUS_PROCESSED = 'PROCESSED';
@@ -198,6 +195,18 @@ class PayloadConverter
     }
 
     /**
+     * Get payment data for an order
+     *
+     * @param array $order
+     *
+     * @return array|null
+     */
+    public function getOrderPaymentData(array $order): ?array
+    {
+        return $this->getDataObjectArrayByKey($order, 'payment');
+    }
+
+    /**
      * Prepare and return attributes data
      *
      * @param array $area
@@ -262,6 +271,25 @@ class PayloadConverter
                 $this->logger->debug('failed to map gift card(s) in order attributes');
                 $this->logger->error($t);
             }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Prepare and return attributes data for payments
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    private function paymentAndReturnAttributes(array $payment, array $area): array
+    {
+        $attributes = $this->prepareAttributesData($area);
+
+        if (!empty($payment[OrderPaymentInterface::METHOD])) {
+            $attributes['method'] = $payment[OrderPaymentInterface::METHOD];
         }
 
         return $attributes;
@@ -436,6 +464,7 @@ class PayloadConverter
     {
         $data = [
             'id'              => $order[Order::INCREMENT_ID],
+            'status'          => $this->orderStatus($order),
             'currency'        => $order[OrderInterface::ORDER_CURRENCY_CODE],
             'items'           => $this->convertItemsData($allVisibleItems),
             'storeIdentifier' => (string)$order[OrderInterface::STORE_ID],
@@ -444,6 +473,7 @@ class PayloadConverter
             'attributes'      => json_encode($this->orderAttributes($order, $area)),
             'provider'        => $this->getOrderProvider($area),
         ];
+
         if (!empty($order['created_at'])) {
             $data['created_at'] = $this->getFormattedDatetime($order['created_at']);
         }
@@ -465,48 +495,46 @@ class PayloadConverter
             $data['profile_id'] = $id;
         }
 
+        return $data;
+    }
+
+    /**
+     * Returns the Solve order status for a given Magento order
+     *
+     * @param array $order
+     *
+     * @return string
+     */
+    private function orderStatus(array $order): string
+    {
         if (empty($order[OrderInterface::STATE])) {
             if (!empty($order[Order::TOTAL_REFUNDED])) {
-                $data['status'] = self::ORDER_STATUS_RETURNED;
-
-                return $data;
+                return self::ORDER_STATUS_RETURNED;
             }
+
             if (!empty($order[Order::TOTAL_PAID])) {
-                $data['paymentStatus'] = self::PAYMENT_STATUS_PAID;
-                $data['status'] = self::ORDER_STATUS_PROCESSED;
-
-                return $data;
+                return self::ORDER_STATUS_PROCESSED;
             }
-            $data['paymentStatus'] = self::PAYMENT_STATUS_PENDING;
-            $data['status'] = self::ORDER_STATUS_CREATED;
 
-            return $data;
+            return self::ORDER_STATUS_CREATED;
         }
+
         switch ($order[OrderInterface::STATE]) {
             case Order::STATE_NEW:
-                $data['paymentStatus'] = self::PAYMENT_STATUS_PENDING;
-                $data['status'] = self::ORDER_STATUS_CREATED;
-                break;
+                return self::ORDER_STATUS_CREATED;
             case Order::STATE_CLOSED:
-                $data['status'] = self::ORDER_STATUS_RETURNED;
-                break;
+                return self::ORDER_STATUS_RETURNED;
             case Order::STATE_CANCELED:
-                $data['paymentStatus'] = self::PAYMENT_STATUS_CANCELED;
-                $data['status'] = self::ORDER_STATUS_CANCELED;
-                break;
+                return self::ORDER_STATUS_CANCELED;
             case Order::STATE_COMPLETE:
-                $data['paymentStatus'] = self::PAYMENT_STATUS_PAID;
-                $data['status'] = self::ORDER_STATUS_PROCESSED;
-                break;
+                return self::ORDER_STATUS_PROCESSED;
             default:
                 if (!empty($order[OrderInterface::TOTAL_REFUNDED])) {
-                    $data['status'] = self::ORDER_STATUS_RETURNED;
-                    break;
+                    return self::ORDER_STATUS_RETURNED;
                 }
+
                 if (!empty($order[OrderInterface::TOTAL_PAID])) {
-                    $data['paymentStatus'] = self::PAYMENT_STATUS_PAID;
-                    $data['status'] = self::ORDER_STATUS_PROCESSED;
-                    break;
+                    return self::ORDER_STATUS_PROCESSED;
                 }
 
                 // Work around for the Payment express extension which dispatches a `sales_order_save_after` event
@@ -514,16 +542,59 @@ class PayloadConverter
                 // If we didn't have this work around the order would be un-canceled in Solve moments after it was canceled.
                 if ($order[OrderInterface::STATE] == Order::STATE_PENDING_PAYMENT &&
                     $order[OrderInterface::STATUS] == "paymentexpress_failed") {
-
-                    $data['paymentStatus'] = self::PAYMENT_STATUS_CANCELED;
-                    $data['status'] = self::ORDER_STATUS_CANCELED;
-                    break;
+                    return self::ORDER_STATUS_CANCELED;
                 }
                 
-                $data['paymentStatus'] = self::PAYMENT_STATUS_PENDING;
-                $data['status'] = self::ORDER_STATUS_PROCESSED;
-                break;
+                return self::ORDER_STATUS_PROCESSED;
         }
+    }
+
+    /**
+     * Return the input to create a Solve payment in GraphQL from an order's payment data.
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertPaymentData(array $order, array $area): array
+    {
+        $payment = $this->getOrderPaymentData($order);
+        $data = [
+            'id'         => $payment[OrderPaymentInterface::ENTITY_ID],
+            'order_id'   => $order[OrderInterface::INCREMENT_ID],
+            'provider'   => $this->getOrderProvider($area),
+            'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
+            'attributes' => json_encode($this->paymentAndReturnAttributes($payment, $area)),
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Return the input to create a Solve return in GraphQL from an order's payment data.
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertReturnData(array $order, array $area): array
+    {
+        $payment = $this->getOrderPaymentData($order);
+        $data = [
+            'id'            => $payment[OrderPaymentInterface::ENTITY_ID],
+            'order_id'      => $order[OrderInterface::INCREMENT_ID],
+            'provider'      => $this->getOrderProvider($area),
+            'return_reason' => 'Refund',
+            'adjustments'   => [
+                [
+                    'amount'      => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_REFUNDED]),
+                    'description' => 'Refund',
+                ]
+            ],
+            'attributes'  => json_encode($this->paymentAndReturnAttributes($payment, $area)),
+        ];
 
         return $data;
     }

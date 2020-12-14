@@ -25,6 +25,8 @@
         <event name="sales_order_save_after">
             <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterGuestCustomer"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateOrder"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdatePayment"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateReturn"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\ConvertCart"/>
         </event>
         <event name="sales_order_shipment_save_after">
