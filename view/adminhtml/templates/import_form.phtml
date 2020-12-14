@@ -1,0 +1,28 @@
+<form class="form" action="<?= $this->getUrl('solvedata_events/import/import'); ?>" method="post">
+    <?php echo $this->getBlockHtml('formkey') ?>
+    <div class="field required">
+        <select name="entity" id="entity">
+            <option value="customers">Customers</option>
+            <option value="orders">Orders</option>
+        </select>
+    </div>
+    <div class="field required">
+        <label for="id_from" class="label"><span><?php echo __('ID From') ?></span></label>
+        <div class="control">
+            <input type="text" id="id_from" name="id_from" class="input-text validate-number validate-zero-or-greater"/>
+        </div>
+    </div>
+    <div class="field required">
+        <label for="id_to" class="label"><span><?php echo __('ID To') ?></span></label>
+        <div class="control">
+            <input type="text" id="id_to" name="id_to" class="input-text validate-number validate-zero-or-greater"/>
+        </div>
+    </div>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button type="submit" class="action submit primary" title="<?php echo __('Import') ?>">
+                <span><?php echo __('Submit') ?></span>
+            </button>
+        </div>
+    </div>
+</form>

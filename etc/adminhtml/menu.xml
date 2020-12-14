@@ -18,5 +18,14 @@
              dependsOnModule="SolveData_Events"
              action="solvedata_events/event"
              resource="SolveData_Events::event"/>
+        <add id="SolveData_Events::import"
+             title="Import"
+             translate="title"
+             module="SolveData_Events"
+             parent="SolveData_Events::event"
+             sortOrder="20"
+             dependsOnModule="SolveData_Events"
+             action="solvedata_events/import"
+             resource="SolveData_Events::event"/>
     </menu>
 </config>
