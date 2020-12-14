@@ -3,7 +3,7 @@
   "description": "Magento 2 Solve Data extension",
   "license": "Apache-2.0",
   "type": "magento2-module",
-  "version": "1.0.61",
+  "version": "1.0.62",
   "require": {
     "php": "~7.2",
     "magento/module-catalog": ">=103.0",
