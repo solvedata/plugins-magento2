@@ -130,15 +130,24 @@ class PayloadConverter
      *
      * @param string $time
      *
-     * @return string
-     *
-     * @throws \Exception
+     * @return string|null
      */
-    public function getFormattedDatetime(string $time = 'now'): string
+    public function getFormattedDatetime(string $time = 'now'): ?string
     {
-        $now = new \DateTime($time, new \DateTimeZone('UTC'));
+        try {
+            // Magento uses UTC when persisting datetimes for its data objects.
+            // The store's locale timezone is only be used for presentation.
+            $dateTime = new \DateTime($time, new \DateTimeZone('UTC'));
 
-        return $now->format(\DateTime::ISO8601);
+            // Use the 'c' magic string over DateTime::ISO8601 as it inserts a colon in the timezone offset.
+            //      For example, the offset will be +00:00 instead of +0000.
+            $iso8601FormatMagicString = 'c';
+            return $dateTime->format($iso8601FormatMagicString);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to format time into an ISO-8601 datetime string', ['time' => $time]);
+            $this->logger->error($t);
+            return null;
+        }
     }
 
     /**
@@ -425,6 +434,10 @@ class PayloadConverter
             'fullName'   => $customer[CustomerInterface::FIRSTNAME] . ' ' . $customer[CustomerInterface::LASTNAME],
             'attributes' => json_encode($this->prepareAttributesData($area)),
         ];
+
+        if (!empty($customer[CustomerInterface::CREATED_AT])) {
+            $data['firstSeen'] = $this->getFormattedDatetime($customer[CustomerInterface::CREATED_AT]);
+        }
 
         if (!empty($customer[CustomerInterface::DOB])) {
             $birthDate = new \DateTime($customer[CustomerInterface::DOB]);
