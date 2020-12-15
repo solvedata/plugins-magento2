@@ -135,8 +135,8 @@ class PayloadConverter
     public function getFormattedDatetime(string $time = 'now'): ?string
     {
         try {
-            // Magento should use UTC when persisting datetimes.
-            // The store's locale timezone should only be used for presentation of time.
+            // Magento uses UTC when persisting datetimes for its data objects.
+            // The store's locale timezone is only be used for presentation.
             $dateTime = new \DateTime($time, new \DateTimeZone('UTC'));
 
             // Use the 'c' magic string over DateTime::ISO8601 as it inserts a colon in the timezone offset.
