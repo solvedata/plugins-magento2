@@ -10,7 +10,7 @@ use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 class OrderCancelAfter extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
-mutation create_or_update_order($input: CreateOrderInput!) {
+mutation create_or_update_order($input: CreateOrUpdateOrderInput!) {
     create_or_update_order(input: $input) {
         profile_id
     }
