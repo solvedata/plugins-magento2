@@ -25,6 +25,7 @@ class OrderSave extends EventAbstract
         $order = $observer->getEvent()->getOrder();
         try {
             if (empty($order->getState())) {
+                $this->logger->info('order state is empty for order ' . $order->getEntityId());
                 throw new \Exception('Order state is empty');
             }
         } catch (\Exception $e) {

@@ -573,9 +573,13 @@ class PayloadConverter
     public function convertPaymentData(array $order, array $area): array
     {
         $payment = $this->getOrderPaymentData($order);
+
+        $orderId = $order[OrderInterface::INCREMENT_ID];
         $data = [
-            'id'         => $payment[OrderPaymentInterface::ENTITY_ID],
-            'order_id'   => $order[OrderInterface::INCREMENT_ID],
+            // Use the order ID suffixed with `-payment` as a default ID when the
+            //  payment data is missing an entity ID.
+            'id'         => $payment[OrderPaymentInterface::ENTITY_ID] ?? $orderId . "-payment",
+            'order_id'   => $orderId,
             'provider'   => $this->getOrderProvider($area),
             'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
             'attributes' => json_encode($this->paymentAndReturnAttributes($payment, $area)),
@@ -624,10 +628,13 @@ class PayloadConverter
         $adjustments = [];
 
         if (!empty($order['gift_cards_amount'])) {
-            $adjustments[] = [
-                'amount'      => sprintf('-%.4F', $order['gift_cards_amount']),
-                'description' => 'Gift card',
-            ];
+            $giftCardsAmount = $order['gift_cards_amount'];
+            if (is_numeric($giftCardsAmount) && $giftCardsAmount > 0) {
+                $adjustments[] = [
+                    'amount'      => sprintf('-%.4F', $giftCardsAmount),
+                    'description' => 'Gift card',
+                ];
+            }
         }
         
         $adjustments = array_merge($adjustments, [
