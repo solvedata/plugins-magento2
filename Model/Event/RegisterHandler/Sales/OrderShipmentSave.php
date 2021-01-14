@@ -26,6 +26,7 @@ class OrderShipmentSave extends EventAbstract
         $order = $shipment->getOrder();
         try {
             if (empty($order->getState())) {
+                $this->logger->info('order state is empty for order ' . $order->getEntityId());
                 throw new \Exception('Order state is empty');
             }
         } catch (\Exception $e) {
