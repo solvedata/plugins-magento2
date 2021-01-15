@@ -600,7 +600,7 @@ class PayloadConverter
     {
         $payment = $this->getOrderPaymentData($order);
         $data = [
-            'id'            => $payment[OrderPaymentInterface::ENTITY_ID],
+            'id'            => $payment[OrderPaymentInterface::ENTITY_ID] ?? $orderId . "-return",
             'order_id'      => $order[OrderInterface::INCREMENT_ID],
             'provider'      => $this->getOrderProvider($area),
             'return_reason' => 'Refund',
