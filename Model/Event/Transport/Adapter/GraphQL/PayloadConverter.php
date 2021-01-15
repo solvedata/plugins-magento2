@@ -636,21 +636,36 @@ class PayloadConverter
                 ];
             }
         }
+
+        if (!empty($order[OrderInterface::DISCOUNT_AMOUNT])) {
+            $discountAmount = $order[OrderInterface::DISCOUNT_AMOUNT];
+            if (is_numeric($discountAmount) && $discountAmount != 0) {
+                $adjustments[] = [
+                    'amount'      => sprintf('%.4F', $discountAmount),
+                    'description' => 'Discount amount',
+                ];
+            }
+        }
         
-        $adjustments = array_merge($adjustments, [
-            [
-                'amount'      => sprintf('%.4F', $order[OrderInterface::TAX_AMOUNT]),
-                'description' => 'Tax amount',
-            ],
-            [
-                'amount'      => sprintf('%.4F', $order[OrderInterface::DISCOUNT_AMOUNT]),
-                'description' => 'Discount amount',
-            ],
-            [
-                'amount'      => sprintf('%.4F', $order[OrderInterface::SHIPPING_AMOUNT]),
-                'description' => 'Shipping amount',
-            ],
-        ]);
+        $adjustments[] = [
+            'amount'      => sprintf('%.4F', $order[OrderInterface::SHIPPING_AMOUNT]),
+            'description' => 'Shipping amount',
+        ];
+
+        $adjustments[] = [
+            'amount'      => sprintf('%.4F', $order[OrderInterface::TAX_AMOUNT]),
+            'description' => 'Tax amount',
+        ];
+
+        if (!empty($order[OrderInterface::DISCOUNT_TAX_COMPENSATION_AMOUNT])) {
+            $discountCompensationAmount = $order[OrderInterface::DISCOUNT_TAX_COMPENSATION_AMOUNT];
+            if (is_numeric($discountCompensationAmount) && $discountCompensationAmount != 0) {
+                $adjustments[] = [
+                    'amount'      => sprintf('%.4F', $discountCompensationAmount),
+                    'description' => 'Discount tax compensation amount',
+                ];
+            }
+        }
 
         return $adjustments;
     }
