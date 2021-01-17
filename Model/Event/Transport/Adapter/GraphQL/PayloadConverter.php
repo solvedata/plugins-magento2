@@ -637,6 +637,8 @@ class PayloadConverter
             }
         }
 
+        // Only include the discount amount adjustment if there is a
+        //      non-zero discount on the order.
         if (!empty($order[OrderInterface::DISCOUNT_AMOUNT])) {
             $discountAmount = $order[OrderInterface::DISCOUNT_AMOUNT];
             if (is_numeric($discountAmount) && $discountAmount != 0) {
@@ -657,6 +659,8 @@ class PayloadConverter
             'description' => 'Tax amount',
         ];
 
+        // Only include the discount tax compensation amount adjustment if there is a
+        //      non-zero compensation amount on the order.
         if (!empty($order[OrderInterface::DISCOUNT_TAX_COMPENSATION_AMOUNT])) {
             $discountCompensationAmount = $order[OrderInterface::DISCOUNT_TAX_COMPENSATION_AMOUNT];
             if (is_numeric($discountCompensationAmount) && $discountCompensationAmount != 0) {
