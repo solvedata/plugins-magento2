@@ -576,9 +576,9 @@ class PayloadConverter
 
         $orderId = $order[OrderInterface::INCREMENT_ID];
         $data = [
-            // Use the order ID suffixed with `-payment` as a default ID when the
-            //  payment data is missing an entity ID.
-            'id'         => $payment[OrderPaymentInterface::ENTITY_ID] ?? $orderId . "-payment",
+            // Use the order ID suffixed with `-payment` as the payment's ID as payments's
+            //  entity ID field does not always exist.
+            'id'         => $orderId . "-payment",
             'order_id'   => $orderId,
             'provider'   => $this->getOrderProvider($area),
             'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
@@ -600,7 +600,9 @@ class PayloadConverter
     {
         $payment = $this->getOrderPaymentData($order);
         $data = [
-            'id'            => $payment[OrderPaymentInterface::ENTITY_ID] ?? $orderId . "-return",
+            // Use the order ID suffixed with `-return` as the return's ID as payments's
+            //  entity ID field does not always exist.
+            'id'            => $orderId . "-return",
             'order_id'      => $order[OrderInterface::INCREMENT_ID],
             'provider'      => $this->getOrderProvider($area),
             'return_reason' => 'Refund',
