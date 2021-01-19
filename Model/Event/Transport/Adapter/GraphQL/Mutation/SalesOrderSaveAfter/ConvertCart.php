@@ -65,7 +65,7 @@ GRAPHQL;
 
         // Only attempt to convert carts for guest users if the plugin has been configured to create
         //      carts for anonymous customers.
-        $guestOrder = !empty($order[OrderInterface::CUSTOMER_IS_GUEST]);
+        $guestOrder = !empty($order[OrderInterface::CUSTOMER_IS_GUEST]) && boolval($order[OrderInterface::CUSTOMER_IS_GUEST]);
         if ($guestOrder && $this->config->isAnonymousCartsEnabled() === false) {
             return false;
         }
