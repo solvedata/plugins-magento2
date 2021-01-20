@@ -23,7 +23,7 @@
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\NewsletterSubscriberSaveCommitAfter"/>
         </event>
         <event name="sales_order_save_after">
-            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterGuestCustomer"/>
+            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterCustomer"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateOrder"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\ConvertCart"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdatePayment"/>

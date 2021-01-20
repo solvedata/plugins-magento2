@@ -35,6 +35,19 @@ Run the following command Magento project directory (not the repository root) to
 - http://solvedata.local:8282 - PhpRedisAdmin
 - http://solvedata.local:5601 - Kibana
 
+### Running unit tests
+
+**Installing phpunit**
+We are using an older version of phpunit to avoid dependency conflicts with Magento's dependencies.
+```
+composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
+```
+
+**Running tests**
+```
+./vendor/phpunit/phpunit/phpunit ./vendor/solvedata/plugins-magento2/tests/
+```
+
 ## Handle a new Magento event
 1. Add a new event to `etc/events.xml` and describe which observer class will be processed.
     ```
