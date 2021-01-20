@@ -7,7 +7,7 @@ namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesO
 use Magento\Sales\Api\Data\OrderInterface;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 
-class RegisterGuestCustomer extends MutationAbstract
+class RegisterCustomer extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateProfile($input: ProfileInput!) {
@@ -17,26 +17,6 @@ mutation createOrUpdateProfile($input: ProfileInput!) {
     }
 }
 GRAPHQL;
-
-    /**
-     * Mutation is allowed
-     *
-     * @return bool
-     */
-    public function isAllowed(): bool
-    {
-        $payload = $this->getEvent()['payload'];
-        if (empty($payload['order'][OrderInterface::CUSTOMER_IS_GUEST])) {
-            return false;
-        }
-        if (empty($payload['order'][OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_object_new'])
-            && empty($payload['order'][OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_import_to_solve_data'])
-        ) {
-            return false;
-        }
-
-        return parent::isAllowed();
-    }
 
     /**
      * Get variables for GraphQL request
@@ -58,8 +38,16 @@ GRAPHQL;
             'attributes' => json_encode($this->payloadConverter->prepareAttributesData($area))
         ];
 
-        if (!empty($order['addresses'])) {
-            $input['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
+        if (!empty($order['customer_firstname'])) {
+            $input['firstName'] = $order['customer_firstname'];
+        }
+
+        if (!empty($order['customer_lastname'])) {
+            $input['lastName'] = $order['customer_lastname'];
+        }
+
+        if (!empty($order['customer_firstname']) && !empty($order['customer_lastname'])) {
+            $input['fullName'] = $order['customer_firstname'] . ' ' . $order['customer_lastname'];
         }
 
         return ['input' => $input];
