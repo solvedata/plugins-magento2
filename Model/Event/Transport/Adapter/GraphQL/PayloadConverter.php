@@ -599,6 +599,8 @@ class PayloadConverter
     public function convertReturnData(array $order, array $area): array
     {
         $payment = $this->getOrderPaymentData($order);
+        
+        $orderId = $order[OrderInterface::INCREMENT_ID];
         $data = [
             // Use the order ID suffixed with `-return` as the return's ID as payments's
             //  entity ID field does not always exist.

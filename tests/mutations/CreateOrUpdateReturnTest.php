@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdatePayment;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateReturn;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 
-class CreateOrUpdatePaymentTest extends TestCase
+class CreateOrUpdateReturnTest extends TestCase
 {
     public function testNotAllowedIfPaymentDataDoesIsNotPresent(): void
     {
@@ -15,7 +15,7 @@ class CreateOrUpdatePaymentTest extends TestCase
 }
 PAYLOAD;
 
-        $mutation = new CreateOrUpdatePayment(
+        $mutation = new CreateOrUpdateReturn(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -23,7 +23,7 @@ PAYLOAD;
         $this->assertFalse($mutation->isAllowed());
     }
 
-    public function testNotAllowedIfAmountPaidIsAbsent(): void
+    public function testNotAllowedIfAmountRefundedIsAbsent(): void
     {
         $payload = <<<'PAYLOAD'
 {
@@ -34,7 +34,7 @@ PAYLOAD;
 }
 PAYLOAD;
 
-        $mutation = new CreateOrUpdatePayment(
+        $mutation = new CreateOrUpdateReturn(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -42,20 +42,20 @@ PAYLOAD;
         $this->assertFalse($mutation->isAllowed());
     }
 
-    public function testNotAllowedIfAmountPaidIsZero(): void
+    public function testNotAllowedIfAmountRefunedIsZero(): void
     {
         $payload = <<<'PAYLOAD'
 {
     "order": {
         "payment (Magento\\Sales\\Model\\Order\\Payment\\Interceptor)": {
-            "amount_paid": "0.0000"
+            "amount_refunded": "0.0000"
         }
     },
     "area": {}
 }
 PAYLOAD;
 
-        $mutation = new CreateOrUpdatePayment(
+        $mutation = new CreateOrUpdateReturn(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -63,20 +63,20 @@ PAYLOAD;
         $this->assertFalse($mutation->isAllowed());
     }
 
-    public function testAllowedIfAmountPaidIsNonZero(): void
+    public function testAllowedIfAmountRefunedIsNonZero(): void
     {
         $payload = <<<'PAYLOAD'
 {
     "order": {
         "payment (Magento\\Sales\\Model\\Order\\Payment\\Interceptor)": {
-            "amount_paid": "1.0000"
+            "amount_refunded": "1.0000"
         }
     },
     "area": {}
 }
 PAYLOAD;
 
-        $mutation = new CreateOrUpdatePayment(
+        $mutation = new CreateOrUpdateReturn(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -91,7 +91,7 @@ PAYLOAD;
     "order": {
         "increment_id": "1001",
         "payment (Magento\\Sales\\Model\\Order\\Payment\\Interceptor)": {
-            "amount_paid": "1.0000"
+            "amount_refunded": "1.0000"
         }
     },
     "area": {
@@ -102,7 +102,7 @@ PAYLOAD;
 }
 PAYLOAD;
 
-        $mutation = new CreateOrUpdatePayment(
+        $mutation = new CreateOrUpdateReturn(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -111,10 +111,16 @@ PAYLOAD;
 
         $this->assertArraySubset(
             [
-                'id'       => '1001-payment',
-                'order_id' => '1001',
-                'provider' => 'unit_test_store',
-                'amount'   => '1.0000',
+                'id'            => '1001-return',
+                'order_id'      => '1001',
+                'provider'      => 'unit_test_store',
+                'return_reason' => 'Refund',
+                'adjustments'   => [
+                    [
+                        'amount'      => '1.0000',
+                        'description' => 'Refund',
+                    ]
+                ],
             ],
             $variables['input']
         );
