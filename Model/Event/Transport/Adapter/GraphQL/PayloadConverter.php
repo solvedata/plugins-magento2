@@ -282,6 +282,10 @@ class PayloadConverter
             }
         }
 
+        if (!empty($order[OrderInterface::QUOTE_ID])) {
+            $attributes['magento_quote_id'] = $order[OrderInterface::QUOTE_ID];
+        }
+
         return $attributes;
     }
 
@@ -599,7 +603,7 @@ class PayloadConverter
     public function convertReturnData(array $order, array $area): array
     {
         $payment = $this->getOrderPaymentData($order);
-        
+
         $orderId = $order[OrderInterface::INCREMENT_ID];
         $data = [
             // Use the order ID suffixed with `-return` as the return's ID as payments's

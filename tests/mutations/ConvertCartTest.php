@@ -62,6 +62,34 @@ PAYLOAD;
         $this->assertTrue($mutation->isAllowed());
     }
 
+
+    public function testIsAllowedIsFalseWhenQouteIdIsAbsent(): void
+    {
+        $payload = <<<'PAYLOAD'
+{
+    "order": {
+        "increment_id": "1001",
+        "remote_ip": "8.8.8.8",
+        "customer_is_guest": 0,
+        "extension_attributes": {
+            "is_object_new": true
+        }
+    },
+    "area": {}
+}
+PAYLOAD;
+
+        $anonymousCartsEnabled = false;
+        
+        $mutation = new ConvertCart(
+            $this->createConfig($anonymousCartsEnabled),
+            $this->createPayloadConverter()
+        );
+        $mutation->setEvent(['payload' => $payload]);
+
+        $this->assertFalse($mutation->isAllowed());
+    }
+
     public function testIsAllowedIsFalseWhenIsGuestCustomer(): void
     {
         $payload = <<<'PAYLOAD'

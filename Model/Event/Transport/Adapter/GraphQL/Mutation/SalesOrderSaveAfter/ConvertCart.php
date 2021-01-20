@@ -48,6 +48,11 @@ GRAPHQL;
         $payload = $this->getEvent()['payload'];
         $order = $payload['order'];
 
+        $cartIdAbsent = empty($order[OrderInterface::QUOTE_ID]);
+        if ($cartIdAbsent) {
+            return false;
+        }
+
         // The `is_object_new` extension attribute is set by the plugin on all new orders.
         // If the attribute is missing this indicates that the order pre-dates the plugin
         //      and therefore no cart will exist in Solve.
@@ -56,8 +61,8 @@ GRAPHQL;
             return false;
         }
 
-        // The absence of an order's `remote_ip` field is inferred to mean that the order wasn't created by
-        //      a human and therefore there no associated cart would have been created.
+        // The absence of an order's `remote_ip` field is inferred to mean that the order was created by
+        //      an automated process rather than a customer and therefore no associated cart would have been created.
         $automatedOrder = empty($order[OrderInterface::REMOTE_IP]);
         if ($automatedOrder) {
             return false;
