@@ -290,6 +290,10 @@ class PayloadConverter
             $attributes['magento_quote_id'] = $order[OrderInterface::QUOTE_ID];
         }
 
+        if (!empty($order[OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_import_to_solve_data'])) {
+            $attributes['imported_at'] = $this->getFormattedDatetime();
+        }
+
         return $attributes;
     }
 

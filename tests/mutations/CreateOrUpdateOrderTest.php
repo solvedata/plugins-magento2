@@ -74,6 +74,43 @@ PAYLOAD;
         );
     }
 
+    public function testImportedOrderAttribute(): void
+    {
+        $payload = <<<'PAYLOAD'
+{
+    "order": {
+        "increment_id": "1001",
+        "quote_id": "q-123",
+        "customer_email": "jane@example.com",
+        "order_currency_code": "USD",
+        "store_id": 1,
+        "shipping_amount": "1.0000",
+        "tax_amount": "0.2000",
+        "addresses": [],
+        "extension_attributes": {
+            "is_import_to_solve_data": true
+        }
+    },
+    "orderAllVisibleItems": [],
+    "area": {
+        "website (Magento\\Store\\Model\\Website\\Interceptor)": {
+            "code": "unit_test_store"
+        }
+    }
+}
+PAYLOAD;
+
+        $mutation = new CreateOrUpdateOrder(
+            $this->createPayloadConverter()
+        );
+        $mutation->setEvent(['payload' => $payload]);
+
+        $variables = $mutation->getVariables();
+
+        $orderAttributes = json_decode($variables['input']['attributes'], true);
+        $this->assertArrayHasKey('imported_at', $orderAttributes);
+    }
+
     private function createPayloadConverter(): PayloadConverter
     {
         $countryFactory = $this->getMockBuilder('Magento\Directory\Model\CountryFactory')
