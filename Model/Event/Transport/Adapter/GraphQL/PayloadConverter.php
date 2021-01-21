@@ -282,6 +282,10 @@ class PayloadConverter
             }
         }
 
+        if (!empty($order[OrderInterface::CUSTOMER_EMAIL])) {
+            $attributes['magento_customer_email'] = $order[OrderInterface::CUSTOMER_EMAIL];
+        }
+
         if (!empty($order[OrderInterface::QUOTE_ID])) {
             $attributes['magento_quote_id'] = $order[OrderInterface::QUOTE_ID];
         }

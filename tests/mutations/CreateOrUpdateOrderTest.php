@@ -67,7 +67,8 @@ PAYLOAD;
 
         $this->assertArraySubset(
             [
-                'magento_quote_id' => 'q-123'
+                'magento_quote_id'       => 'q-123',
+                'magento_customer_email' => 'jane@example.com'
             ],
             json_decode($variables['input']['attributes'], true)
         );
