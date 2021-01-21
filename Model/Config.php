@@ -12,21 +12,22 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Config
 {
-    const XML_PATH_IS_ENABLED                    = 'solvedata_events/general/enabled';
-    const XML_PATH_ENABLED_EVENTS                = 'solvedata_events/general/enabled_events';
-    const XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS = 'solvedata_events/general/enabled_anonymous_cart_events';
-    const XML_PATH_DEBUG                         = 'solvedata_events/general/debug';
-    const XML_PATH_CRON_BATCH_SIZE               = 'solvedata_events/general/cron_batch_size';
-    const XML_PATH_TRANSACTION_BATCH_SIZE        = 'solvedata_events/general/transaction_batch_size';
-    const XML_PATH_SENTRY_DSN                    = 'solvedata_events/general/sentry_dsn';
-    const XML_PATH_EVENT_RETENTION_PERIOD        = 'solvedata_events/general/event_retention_period';
-    const XML_PATH_API_URL                       = 'solvedata_events/api/url';
-    const XML_PATH_API_KEY                       = 'solvedata_events/api/key';
-    const XML_PATH_PASSWORD                      = 'solvedata_events/api/password';
-    const XML_PATH_MAX_ATTEMPT_COUNT             = 'solvedata_events/api/max_attempt_count';
-    const XML_PATH_ATTEMPT_INTERVAL              = 'solvedata_events/api/attempt_interval';
-    const XML_PATH_SDK_IS_ENABLED                = 'solvedata_events/sdk/enabled';
-    const XML_PATH_SDK_INIT_CODE                 = 'solvedata_events/sdk/init_code';
+    const XML_PATH_IS_ENABLED                       = 'solvedata_events/general/enabled';
+    const XML_PATH_ENABLED_EVENTS                   = 'solvedata_events/general/enabled_events';
+    const XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS    = 'solvedata_events/general/enabled_anonymous_cart_events';
+    const XML_PATH_ENABLED_CONVERT_HISTORICAL_CARTS = 'solvedata_events/general/enabled_convert_historical_carts';
+    const XML_PATH_DEBUG                            = 'solvedata_events/general/debug';
+    const XML_PATH_CRON_BATCH_SIZE                  = 'solvedata_events/general/cron_batch_size';
+    const XML_PATH_TRANSACTION_BATCH_SIZE           = 'solvedata_events/general/transaction_batch_size';
+    const XML_PATH_SENTRY_DSN                       = 'solvedata_events/general/sentry_dsn';
+    const XML_PATH_EVENT_RETENTION_PERIOD           = 'solvedata_events/general/event_retention_period';
+    const XML_PATH_API_URL                          = 'solvedata_events/api/url';
+    const XML_PATH_API_KEY                          = 'solvedata_events/api/key';
+    const XML_PATH_PASSWORD                         = 'solvedata_events/api/password';
+    const XML_PATH_MAX_ATTEMPT_COUNT                = 'solvedata_events/api/max_attempt_count';
+    const XML_PATH_ATTEMPT_INTERVAL                 = 'solvedata_events/api/attempt_interval';
+    const XML_PATH_SDK_IS_ENABLED                   = 'solvedata_events/sdk/enabled';
+    const XML_PATH_SDK_INIT_CODE                    = 'solvedata_events/sdk/init_code';
 
     /**
      * @var ScopeConfigInterface
@@ -116,6 +117,22 @@ class Config
     {
         return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    /**
+     * Convert carts from historical orders?
+     *
+     * @param integer|null $store
+     *
+     * @return bool
+     */
+    public function convertHistoricalCarts($store = null): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_ENABLED_CONVERT_HISTORICAL_CARTS,
             ScopeInterface::SCOPE_STORE,
             $store
         );

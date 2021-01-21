@@ -53,16 +53,16 @@ GRAPHQL;
             return false;
         }
 
-        // The `is_object_new` extension attribute is set by the plugin on all new orders.
-        // If the attribute is missing this indicates that the order pre-dates the plugin
-        //      and therefore no cart will exist in Solve.
+        // The `is_object_new` extension attribute is set by the plugin on events where the order has just been placed
+        //      and hasn't been saved into the database yet.
         $historicOrder = empty($order[OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_object_new']);
-        if ($historicOrder) {
+        if ($historicOrder && $this->config->convertHistoricalCarts() === false) {
             return false;
         }
 
         // The absence of an order's `remote_ip` field is inferred to mean that the order was created by
         //      an automated process rather than a customer and therefore no associated cart would have been created.
+        // Note (Liam): I'm unsure whether this is necessary.
         $automatedOrder = empty($order[OrderInterface::REMOTE_IP]);
         if ($automatedOrder) {
             return false;

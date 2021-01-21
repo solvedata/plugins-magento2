@@ -23,10 +23,8 @@ class ConvertCartTest extends TestCase
 }
 PAYLOAD;
 
-        $anonymousCartsEnabled = false;
-
         $mutation = new ConvertCart(
-            $this->createConfig($anonymousCartsEnabled),
+            $this->createConfig(),
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -50,11 +48,9 @@ PAYLOAD;
     "area": {}
 }
 PAYLOAD;
-
-        $anonymousCartsEnabled = false;
         
         $mutation = new ConvertCart(
-            $this->createConfig($anonymousCartsEnabled),
+            $this->createConfig(),
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -131,16 +127,40 @@ PAYLOAD;
     "area": {}
 }
 PAYLOAD;
-
-        $anonymousCartsEnabled = false;
         
         $mutation = new ConvertCart(
-            $this->createConfig($anonymousCartsEnabled),
+            $this->createConfig(),
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
+    }
+
+    public function testIsAllowedIsTrueWhenHistoricalOrderIsImportedAndHistoricalCartConversionIsEnabled(): void
+    {
+        $payload = <<<'PAYLOAD'
+{
+    "order": {
+        "increment_id": "1001",
+        "quote_id": "95",
+        "remote_ip": "8.8.8.8",
+        "extension_attributes": {}
+    },
+    "area": {}
+}
+PAYLOAD;
+
+        $anonymousCartsEnabled = false;
+        $historicalCartConversion = true;
+        
+        $mutation = new ConvertCart(
+            $this->createConfig($anonymousCartsEnabled, $historicalCartConversion),
+            $this->createPayloadConverter()
+        );
+        $mutation->setEvent(['payload' => $payload]);
+
+        $this->assertTrue($mutation->isAllowed());
     }
 
     public function testIsAllowedIsFalseWhenRemoteIpIsAbsent(): void
@@ -260,7 +280,7 @@ PAYLOAD;
         );
     }
 
-    private function createConfig($anonymousCartsEnabled = false): Config
+    private function createConfig($anonymousCartsEnabled = false, $convertHistoricCarts = false): Config
     {
         $config = $this->getMockBuilder(Config::class)
             ->disableOriginalConstructor()
@@ -268,6 +288,9 @@ PAYLOAD;
         
         $config->method('isAnonymousCartsEnabled')
                ->willReturn($anonymousCartsEnabled);
+        
+        $config->method('convertHistoricalCarts')
+               ->willReturn($convertHistoricCarts);
         
         return $config;
     }
