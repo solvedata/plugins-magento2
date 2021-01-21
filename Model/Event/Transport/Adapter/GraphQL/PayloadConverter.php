@@ -282,6 +282,18 @@ class PayloadConverter
             }
         }
 
+        if (!empty($order[OrderInterface::CUSTOMER_EMAIL])) {
+            $attributes['magento_customer_email'] = $order[OrderInterface::CUSTOMER_EMAIL];
+        }
+
+        if (!empty($order[OrderInterface::QUOTE_ID])) {
+            $attributes['magento_quote_id'] = $order[OrderInterface::QUOTE_ID];
+        }
+
+        if (!empty($order[OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_import_to_solve_data'])) {
+            $attributes['imported_at'] = $this->getFormattedDatetime();
+        }
+
         return $attributes;
     }
 
@@ -599,6 +611,8 @@ class PayloadConverter
     public function convertReturnData(array $order, array $area): array
     {
         $payment = $this->getOrderPaymentData($order);
+
+        $orderId = $order[OrderInterface::INCREMENT_ID];
         $data = [
             // Use the order ID suffixed with `-return` as the return's ID as payments's
             //  entity ID field does not always exist.
