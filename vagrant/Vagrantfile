@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/8"
+
+  config.vm.disk :disk, size: "20GB", primary: true
+  config.vm.network "forwarded_port", guest: 80, host: 8081
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.memory = 4 * 1024
+  end
+
+  config.vm.provision "shell", path: "provision.sh", env: {
+    "MAGENTO_REPO_KEY"    => ENV["MAGENTO_REPO_KEY"],
+    "MAGENTO_REPO_SECRET" => ENV["MAGENTO_REPO_SECRET"]
+  }
+end
