@@ -25,11 +25,6 @@ case "${command}" in
         "${DIR}/tools.sh" up
     ;;
 
-    pull)
-        echo "Pulling docker..."
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" pull
-    ;;
-
     build)
         echo "Building docker..."
         docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" build
@@ -38,27 +33,6 @@ case "${command}" in
     rebuild)
         echo "Rebuilding docker..."
         docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" up -d --build --force-recreate
-    ;;
-
-    install)
-        HOST_FILE=/etc/hosts
-        if [ ! -f "$HOST_FILE" ]; then
-          HOST_FILE="c:\windows\system32\drivers\etc\hosts"
-        fi
-
-        HOST_NAME="solvedata.local"
-        HOST_ROW="127.0.0.1 solvedata.local"
-        if [ ! -n "$(grep "$HOST_NAME" $HOST_FILE)" ] ; then
-            echo "You should add this line to your to hosts(after >>):";
-            echo ">> $HOST_ROW"
-            # sudo -- sh -c -e "echo '\n$HOST_ROW\n' >> $HOST_FILE";
-        fi
-
-        if [ ! -f "${DIR}/.env" ]; then
-          cp "${DIR}/.env.example" "${DIR}/.env"
-        fi
-
-        "${DIR}/tools.sh" pull
     ;;
 
     php)
@@ -74,15 +48,6 @@ case "${command}" in
         docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm "$@"
     ;;
 
-    run_cron)
-        echo "Starting magento cron jobs..."
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cache:flush"
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:install"
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:run"
-        "${DIR}/tools.sh" php_exec "service rsyslog start"
-        "${DIR}/tools.sh" php_exec "service cron restart"
-    ;;
-
     recompile)
         echo "Regenerating Magento's generated code & content..."
         bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:upgrade"
@@ -90,11 +55,11 @@ case "${command}" in
         bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:static-content:deploy --force"
     ;;
 
-    magento_install)
+    setup_magento)
         echo "Performing first time setup of Magento"
 
         # shellcheck disable=SC1004
-        bash "${DIR}/tools.sh" php_exec sh -c '
+         docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec -T php-fpm sh -c '
             sudo -u www-data php bin/magento setup:install \
                 --base-url="http://${MAGENTO_WEB_ADDRESS}:${MAGENTO_WEB_PORT}/" \
                 --db-host="${MYSQL_HOST}" \
@@ -108,7 +73,17 @@ case "${command}" in
                 --admin-password="${MAGENTO_ADMIN_PASSWORD}" \
                 --language="${MAGENTO_LANGUAGE}" \
                 --currency="${MAGENTO_CURRENCY}" \
-                --timezone="${MAGENTO_TIMEZONE}"'
+                --timezone="${MAGENTO_TIMEZONE}"
+            '
+    ;;
+
+    setup_cron)
+        echo "Starting magento cron jobs..."
+        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cache:flush"
+        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:install"
+        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:run"
+        "${DIR}/tools.sh" php_exec "service rsyslog start"
+        "${DIR}/tools.sh" php_exec "service cron restart"
     ;;
 
     admin_url)
@@ -118,26 +93,27 @@ case "${command}" in
     *)
         echo "
         docker:
-            '${DIR}/tools.sh' up
-            '${DIR}/tools.sh' down
-            '${DIR}/tools.sh' restart
-            '${DIR}/tools.sh' pull
-            '${DIR}/tools.sh' build
-            '${DIR}/tools.sh' rebuild
-            '${DIR}/tools.sh' install
+            ${DIR@Q}/tools.sh up
+            ${DIR@Q}/tools.sh down
+            ${DIR@Q}/tools.sh restart
+            ${DIR@Q}/tools.sh pull
+            ${DIR@Q}/tools.sh build
+            ${DIR@Q}/tools.sh rebuild
 
         containers:
-            '${DIR}/tools.sh' php
-            '${DIR}/tools.sh' mysql
+            ${DIR@Q}/tools.sh php
+            ${DIR@Q}/tools.sh mysql
 
         tools:
-            '${DIR}/tools.sh' php_exec ...
-            '${DIR}/tools.sh' mysql_exec ...
+            ${DIR@Q}/tools.sh php_exec ...
+            ${DIR@Q}/tools.sh mysql_exec ...
 
         magento:
-            '${DIR}/tools.sh'  run_cron
-            '${DIR}/tools.sh'  recompile
-            '${DIR}/tools.sh'  admin_url
+            ${DIR@Q}/tools.sh  setup_mageneto
+            ${DIR@Q}/tools.sh  setup_cron
+            ${DIR@Q}/tools.sh  recompile
+            ${DIR@Q}/tools.sh  admin_url
         "
+        exit 1
     ;;
 esac

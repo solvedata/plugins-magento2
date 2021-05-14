@@ -53,19 +53,23 @@ EOF
   )
 
   # Install a local magento development environment
-  sed 's/--interactive --tty//g' /src/install.sh > /tmp/magento-install.sh
-  MAGENTO_PATH="${HOME}/magento" bash /tmp/magento-install.sh
+  MAGENTO_PATH="${HOME}/magento" /src/install.sh
 
   # Symlink in the mounted plugin source into the magento's project source directory
-  sudo rm -rf ~/magento/vendor/solvedata/plugins-magento2
+  rm -rf ~/magento/vendor/solvedata/plugins-magento2
   ln -s /src/ ~/magento/vendor/solvedata/plugins-magento2
 
   # Perform first time setup and configuration for the magento development environment
   (
     cd ~/magento/vendor/solvedata/plugins-magento2/docker
 
-    ./tools.sh magento_install
-    ./tools.sh run_cron
+    if [ ! -f .env ]; then
+      sed "s|^NGINX_HOST_SITE_PATH=.*|NGINX_HOST_SITE_PATH=${HOME}/magento|" .env.example > .env
+    fi
+
+    ./tools.sh up
+    ./tools.sh setup_magento
+    ./tools.sh setup_cron
   )
 }
 
