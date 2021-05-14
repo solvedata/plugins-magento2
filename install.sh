@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x
+set -euxo pipefail
 TMP_DIR=$(mktemp -d)
 
 

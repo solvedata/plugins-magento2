@@ -4,7 +4,10 @@ set -x
 
 DIR=$(dirname "$0")
 
-case $1 in
+declare command="${1}"
+shift
+
+case "${command}" in
 
     up)
         echo "Starting docker..."
@@ -59,19 +62,16 @@ case $1 in
     ;;
 
     php)
-        docker exec -it php-fpm sh
+        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm
     ;;
 
     mysql)
-        docker exec -it mysql sh
+        # shellcheck disable=SC2016
+        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec mysql mysql "$@"
     ;;
 
     php_exec)
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm $2
-    ;;
-
-    mysql_exec)
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec mysql $2
+        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm "$@"
     ;;
 
     run_cron)
@@ -88,6 +88,27 @@ case $1 in
         bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:upgrade"
         bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:di:compile"
         bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:static-content:deploy --force"
+    ;;
+
+    magento_install)
+        echo "Performing first time setup of Magento"
+
+        # shellcheck disable=SC1004
+        bash "${DIR}/tools.sh" php_exec sh -c '
+            sudo -u www-data php bin/magento setup:install \
+                --base-url="http://${MAGENTO_WEB_ADDRESS}:${MAGENTO_WEB_PORT}/" \
+                --db-host="${MYSQL_HOST}" \
+                --db-name="${MYSQL_DATABASE}" \
+                --db-user="${MYSQL_USER}" \
+                --db-password="${MYSQL_PASSWORD}" \
+                --admin-firstname="${MAGENTO_ADMIN_FIRSTNAME}" \
+                --admin-lastname="${MAGENTO_ADMIN_LASTNAME}" \
+                --admin-email="${MAGENTO_ADMIN_EMAIL}" \
+                --admin-user="${MAGENTO_ADMIN_USER}" \
+                --admin-password="${MAGENTO_ADMIN_PASSWORD}" \
+                --language="${MAGENTO_LANGUAGE}" \
+                --currency="${MAGENTO_CURRENCY}" \
+                --timezone="${MAGENTO_TIMEZONE}"'
     ;;
 
     admin_url)

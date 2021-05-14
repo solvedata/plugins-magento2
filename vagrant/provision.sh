@@ -4,23 +4,35 @@ set -euo pipefail
 [ -n "${DEBUG:-}" ] && set -x
 IFS=$'\n\t'
 
-docker_compose_version='1.28.0'
+docker_compose_version='1.29.1'
 
-root_setup () {  
+root_setup () {
   # Install docker
-  curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-  sh /tmp/get-docker.sh
-  rm /tmp/get-docker.sh
+  if ! command -v docker >/dev/null; then
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    sh /tmp/get-docker.sh
+    rm /tmp/get-docker.sh
 
-  systemctl start docker
-  systemctl enable docker
-  usermod -aG docker vagrant
+    systemctl start docker
+    systemctl enable docker
+    usermod -aG docker vagrant
+    usermod -aG docker www-data
+  fi
 
   # Install docker-compose
-  curl -L "https://github.com/docker/compose/releases/download/${docker_compose_version}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  chmod +x /usr/local/bin/docker-compose
+  if ! command -v docker-compose >/dev/null; then
+    curl -L "https://github.com/docker/compose/releases/download/${docker_compose_version}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+  fi
 
-  dnf install --assumeyes git
+  # apt-get update
+  # apt-get install --yes git
+
+  usermod --home /home/www-data www-data
+  mkdir -p /home/www-data
+  chown www-data:www-data /home/www-data
+
+  ln -fs /src /home/www-data/plugins-magento2
 }
 
 setup () {
@@ -40,11 +52,21 @@ setup () {
 EOF
   )
 
-  #git clone https://github.com/solvedata/plugins-magento2 ~/plugins-magento2
-  cd ~/plugins-magento2
+  # Install a local magento development environment
+  sed 's/--interactive --tty//g' /src/install.sh > /tmp/magento-install.sh
+  MAGENTO_PATH="${HOME}/magento" bash /tmp/magento-install.sh
 
-  sed -i'' 's/--interactive --tty//g' ./install.sh
-  ./install.sh
+  # Symlink in the mounted plugin source into the magento's project source directory
+  sudo rm -rf ~/magento/vendor/solvedata/plugins-magento2
+  ln -s /src/ ~/magento/vendor/solvedata/plugins-magento2
+
+  # Perform first time setup and configuration for the magento development environment
+  (
+    cd ~/magento/vendor/solvedata/plugins-magento2/docker
+
+    ./tools.sh magento_install
+    ./tools.sh run_cron
+  )
 }
 
 main () {
@@ -55,7 +77,8 @@ main () {
 
   if [[ "$(id -u)" == 0 ]]; then
     root_setup
-    exec runuser --user vagrant -- "${0}"
+    chown www-data:www-data "${0}"
+    exec runuser --user www-data -- "${0}"
   fi
 
   setup

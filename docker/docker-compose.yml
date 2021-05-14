@@ -4,8 +4,8 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "${NGINX_HOST_HTTP_PORT}:80"
-      - "${NGINX_HOST_HTTPS_PORT}:443"
+      - ${NGINX_HOST_HTTP_PORT}:80
+      - ${NGINX_HOST_HTTPS_PORT}:443
     volumes:
       - ${NGINX_HOST_SITE_PATH}:/var/www:ro
       - ./configs/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
@@ -17,19 +17,48 @@ services:
     build: ./configs/php
     volumes:
       - ${NGINX_HOST_SITE_PATH}:/var/www
+    environment:
+      # Web configuration
+      - MAGENTO_WEB_ADDRESS
+      - MAGENTO_WEB_PORT
+
+      # Admin user configuration
+      - MAGENTO_ADMIN_FIRSTNAME
+      - MAGENTO_ADMIN_LASTNAME
+      - MAGENTO_ADMIN_EMAIL
+      - MAGENTO_ADMIN_USER
+      - MAGENTO_ADMIN_PASSWORD
+
+      # Store configuration
+      - MAGENTO_LANGUAGE
+      - MAGENTO_CURRENCY
+      - MAGENTO_TIMEZONE
+
+      # Database configuration
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
     links:
       - mysql
 
   mysql:
     image: mysql:5.7
+    entrypoint:
+      - bash
+      - -c
+      - |
+        echo -e "[client]\ndatabase=${MYSQL_DATABASE}\nuser=${MYSQL_USER}\npassword=${MYSQL_PASSWORD}" > ~/.my.cnf
+        exec docker-entrypoint.sh mysqld
     ports:
-      - "${MYSQL_HOST_PORT}:${MYSQL_PORT}"
+      - ${MYSQL_HOST_PORT}:${MYSQL_PORT}
     environment:
-      - MYSQL_PORT=${MYSQL_PORT}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PORT
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD
     volumes:
       - ${MYSQL_HOST_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
       - mysql:/var/lib/mysql
