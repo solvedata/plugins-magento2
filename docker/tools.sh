@@ -7,16 +7,29 @@ DIR=$(dirname "$0")
 declare command="${1}"
 shift
 
+docker_compose() {
+    (
+        cd -- "${DIR}"
+
+        if [[ "${1:-}" == 'exec' && ! -t 1 ]]; then
+            shift
+            docker-compose exec -T "$@"
+        else
+            docker-compose "$@"
+        fi
+    )
+}
+
 case "${command}" in
 
     up)
         echo "Starting docker..."
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" up -d
+        docker_compose up -d
     ;;
 
     down)
         echo "Stopping docker..."
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" down
+        docker_compose down
     ;;
 
     restart)
@@ -27,25 +40,24 @@ case "${command}" in
 
     build)
         echo "Building docker..."
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" build
+        docker_compose build
     ;;
 
     rebuild)
         echo "Rebuilding docker..."
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" up -d --build --force-recreate
+        docker_compose up -d --build --force-recreate
     ;;
 
     php)
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm
+        docker_compose exec php-fpm
     ;;
 
     mysql)
-        # shellcheck disable=SC2016
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec mysql mysql "$@"
+        docker_compose exec mysql mysql "$@"
     ;;
 
     php_exec)
-        docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec php-fpm "$@"
+        docker_compose exec php-fpm "$@"
     ;;
 
     recompile)
@@ -59,7 +71,7 @@ case "${command}" in
         echo "Performing first time setup of Magento"
 
         # shellcheck disable=SC1004
-         docker-compose -f "${DIR}/docker-compose.yml" --project-directory="${DIR}" exec -T php-fpm sh -c '
+         docker_compose exec php-fpm sh -c '
             sudo -u www-data php bin/magento setup:install \
                 --base-url="http://${MAGENTO_WEB_ADDRESS}:${MAGENTO_WEB_PORT}/" \
                 --db-host="${MYSQL_HOST}" \
@@ -79,15 +91,34 @@ case "${command}" in
 
     setup_cron)
         echo "Starting magento cron jobs..."
-        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cache:flush
-        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cron:install
-        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cron:run
+        "${DIR}/tools.sh" php_exec sudo -u www-data sh -c '
+            php bin/magento cache:flush
+            php bin/magento cron:install
+            php bin/magento cron:run'
+
         "${DIR}/tools.sh" php_exec service rsyslog start
         "${DIR}/tools.sh" php_exec service cron restart
     ;;
 
-    admin_url)
-        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento info:adminuri
+    urls)
+        declare url
+        url="$(
+            bash "${DIR}/tools.sh" mysql \
+                --batch \
+                --silent \
+                --execute "select value from core_config_data where path = 'web/unsecure/base_url' limit 1" \
+                2>/dev/null
+        )"
+
+        declare admin_path
+        admin_path="$(
+            bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento info:adminuri 2>/dev/null \
+                | grep -Ev '^$' \
+                | awk -F': ' '{print $2}'
+        )"
+
+        echo "Magento store is running at ${url}"
+        echo "Magento Admin's UI is at ${url%?}${admin_path}"
     ;;
 
     *)

@@ -57,7 +57,7 @@ EOF
 mount_plugin_source() {
   local mount_dir=~www-data/magento/vendor/solvedata/plugins-magento2
 
-  if findmnt -- "${mount_dir}" 2>/dev/null; then
+  if findmnt -- "${mount_dir}" 2>&1 >/dev/null; then
     return
   fi
 
@@ -69,7 +69,19 @@ mount_plugin_source() {
   mount \
     -t vboxsf \
     -o rw,nodev,relatime,iocharset=utf8,uid=33,gid=33 \
-    plugins-magento2 "${plugin_dir}"
+    plugins-magento2 "${mount_dir}"
+}
+
+wait_for_mysql() {
+  (
+    cd ~/magento/vendor/solvedata/plugins-magento2/docker
+
+    echo "Waiting for mysql to be ready"
+    until docker-compose exec -T mysql mysql -e 'select 1' 2>&1 >/dev/null; do
+      echo -n '.'
+    done
+    echo
+  )
 }
 
 setup_magento() {
@@ -81,8 +93,13 @@ setup_magento() {
   fi
 
   ./tools.sh up
+
+  wait_for_mysql
+
   ./tools.sh setup_magento
   ./tools.sh setup_cron
+
+  ./tools.sh urls
 }
 
 main () {
