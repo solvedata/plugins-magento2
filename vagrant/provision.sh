@@ -25,17 +25,15 @@ root_setup () {
     chmod +x /usr/local/bin/docker-compose
   fi
 
-  # apt-get update
-  # apt-get install --yes git
+  apt-get update
+  apt-get install --yes git jq
 
   usermod --home /home/www-data www-data
-  mkdir -p /home/www-data
-  chown www-data:www-data /home/www-data
-
-  ln -fs /src /home/www-data/plugins-magento2
+  mkdir -p ~www-data
+  chown www-data:www-data ~www-data
 }
 
-setup () {
+install_magento () {
   # Configure Magento's composer auth
   mkdir -p ~/.composer/
   (
@@ -53,24 +51,38 @@ EOF
   )
 
   # Install a local magento development environment
-  MAGENTO_PATH="${HOME}/magento" /src/install.sh
+  MAGENTO_PATH="${HOME}/magento" /plugins-magento2/install.sh
+}
 
-  # Symlink in the mounted plugin source into the magento's project source directory
-  rm -rf ~/magento/vendor/solvedata/plugins-magento2
-  ln -s /src/ ~/magento/vendor/solvedata/plugins-magento2
+mount_plugin_source() {
+  local mount_dir=~www-data/magento/vendor/solvedata/plugins-magento2
 
+  if findmnt -- "${mount_dir}" 2>/dev/null; then
+    return
+  fi
+
+  # Delete the existing plugin directory that composer pulled when resolving dependencies
+  rm -rf -- "${mount_dir}"
+
+  mkdir -- "${mount_dir}"
+  chown www-data:www-data -- "${mount_dir}"
+  mount \
+    -t vboxsf \
+    -o rw,nodev,relatime,iocharset=utf8,uid=33,gid=33 \
+    plugins-magento2 "${plugin_dir}"
+}
+
+setup_magento() {
   # Perform first time setup and configuration for the magento development environment
-  (
-    cd ~/magento/vendor/solvedata/plugins-magento2/docker
+  cd ~/magento/vendor/solvedata/plugins-magento2/docker
 
-    if [ ! -f .env ]; then
-      sed "s|^NGINX_HOST_SITE_PATH=.*|NGINX_HOST_SITE_PATH=${HOME}/magento|" .env.example > .env
-    fi
+  if [ ! -f .env ]; then
+    sed "s|^NGINX_HOST_SITE_PATH=.*|NGINX_HOST_SITE_PATH=${HOME}/magento|" .env.example > .env
+  fi
 
-    ./tools.sh up
-    ./tools.sh setup_magento
-    ./tools.sh setup_cron
-  )
+  ./tools.sh up
+  ./tools.sh setup_magento
+  ./tools.sh setup_cron
 }
 
 main () {
@@ -79,13 +91,32 @@ main () {
     exit 1
   fi
 
-  if [[ "$(id -u)" == 0 ]]; then
-    root_setup
-    chown www-data:www-data "${0}"
-    exec runuser --user www-data -- "${0}"
-  fi
+  case "${1:-}" in
+    '')
+      chown www-data:www-data "${0}"
 
-  setup
+      root_setup
+
+      runuser --user www-data -- "${0}" install_magento
+
+      mount_plugin_source
+
+      runuser --user www-data -- "${0}" setup_magento
+      ;;
+
+    install_magento)
+      install_magento
+      ;;
+    
+    setup_magento)
+      setup_magento
+      ;;
+    
+    *)
+      (2>&1 echo "invalid argument ${1}")
+      exit 1
+      ;;
+  esac
 }
 
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then

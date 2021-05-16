@@ -10,7 +10,7 @@ run_composer() {
     --volume "${COMPOSER_HOME:-$HOME/.composer}:/tmp" \
     --volume "${PWD}:/app" \
     --user "$(id -u):$(id -g)" \
-    composer:1.8.0 --profile -vvv "$@" || (
+    composer:2.0.13 --profile -vvv "$@" || (
       exit_code=$?
       echo "Exited with code: ${exit_code}"
       echo "If composer exited part way through without reason, it may have run out of memory"
@@ -18,7 +18,6 @@ run_composer() {
       echo "Composer needs about 1.7GB of memory to install Magento and 0.7GB to install other packages"
       exit 1
     )
-
 }
 
 MAGENTO_PATH="${MAGENTO_PATH:-magento}"

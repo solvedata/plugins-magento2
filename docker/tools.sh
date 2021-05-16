@@ -50,9 +50,9 @@ case "${command}" in
 
     recompile)
         echo "Regenerating Magento's generated code & content..."
-        bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:upgrade"
-        bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:di:compile"
-        bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento setup:static-content:deploy --force"
+        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:upgrade
+        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:di:compile
+        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:static-content:deploy --force
     ;;
 
     setup_magento)
@@ -79,15 +79,15 @@ case "${command}" in
 
     setup_cron)
         echo "Starting magento cron jobs..."
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cache:flush"
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:install"
-        "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento cron:run"
-        "${DIR}/tools.sh" php_exec "service rsyslog start"
-        "${DIR}/tools.sh" php_exec "service cron restart"
+        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cache:flush
+        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cron:install
+        "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento cron:run
+        "${DIR}/tools.sh" php_exec service rsyslog start
+        "${DIR}/tools.sh" php_exec service cron restart
     ;;
 
     admin_url)
-        bash "${DIR}/tools.sh" php_exec "sudo -u www-data php bin/magento info:adminuri"
+        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento info:adminuri
     ;;
 
     *)
@@ -109,10 +109,10 @@ case "${command}" in
             ${DIR@Q}/tools.sh mysql_exec ...
 
         magento:
-            ${DIR@Q}/tools.sh  setup_mageneto
-            ${DIR@Q}/tools.sh  setup_cron
-            ${DIR@Q}/tools.sh  recompile
-            ${DIR@Q}/tools.sh  admin_url
+            ${DIR@Q}/tools.sh setup_mageneto
+            ${DIR@Q}/tools.sh setup_cron
+            ${DIR@Q}/tools.sh recompile
+            ${DIR@Q}/tools.sh admin_url
         "
         exit 1
     ;;

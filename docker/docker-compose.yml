@@ -7,18 +7,25 @@ services:
       - ${NGINX_HOST_HTTP_PORT}:80
       - ${NGINX_HOST_HTTPS_PORT}:443
     volumes:
-      - "${NGINX_HOST_SITE_PATH}:/var/www:ro"
-      - /src:/var/www/vendor/solvedata/plugins-magento2:ro
       - ./configs/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./configs/nginx/ssl:/etc/nginx/ssl:ro
+      - type: bind
+        source: ${NGINX_HOST_SITE_PATH}
+        target: /var/www
+        read_only: true
+        bind:
+          propagation: shared
     links:
       - php-fpm
 
   php-fpm:
     build: ./configs/php
     volumes:
-      - "${NGINX_HOST_SITE_PATH}:/var/www"
-      - /src:/var/www/vendor/solvedata/plugins-magento2
+      - type: bind
+        source: ${NGINX_HOST_SITE_PATH}
+        target: /var/www
+        bind:
+          propagation: shared
     environment:
       # Web configuration
       - MAGENTO_WEB_ADDRESS
