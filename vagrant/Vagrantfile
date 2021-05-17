@@ -1,5 +1,14 @@
 require 'fileutils'
 
+# Source environment variables from a `.env` file if it exists
+env_file = File.join(__dir__, ".env")
+if File.exist?(env_file) and File.file?(env_file)
+  File.readlines(env_file)
+    .filter { |line| line =~ /^[^#].*=.+/ }
+    .map { |line| line.strip.split("=") }
+    .each { |values| ENV[values[0]] = values[1] }
+end
+
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
 
