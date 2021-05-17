@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
 
   config.vm.disk :disk, size: "20GB", primary: true
-  config.vm.network "forwarded_port", guest: 8081, host: 8081
+  config.vm.network "forwarded_port", guest: 8091, host: 8091
 
   config.vm.provider "virtualbox" do |vb|
     vb.cpus = 2
