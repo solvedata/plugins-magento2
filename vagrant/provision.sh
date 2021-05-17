@@ -26,7 +26,7 @@ root_setup () {
   fi
 
   apt-get update
-  apt-get install --yes git jq
+  apt-get install --yes git jq moreutils
 
   usermod --home /home/www-data www-data
   mkdir -p ~www-data

@@ -117,8 +117,10 @@ case "${command}" in
                 | awk -F': ' '{print $2}'
         )"
 
-        echo "Magento store is running at ${url}"
-        echo "Magento Admin's UI is at ${url%?}${admin_path}"
+        echo "URLs:"
+        echo "  Store  : ${url}"
+        echo "  Admin  : ${url%?}${admin_path}"
+        echo "  Swagger: ${url%?}/swagger"
     ;;
 
     *)

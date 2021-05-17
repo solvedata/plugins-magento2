@@ -36,9 +36,19 @@ if [ ! -f "composer.json" ]; then
   echo "Downloading magento (${MAGENTO_COMPOSER})..."
   run_composer create-project --prefer-dist --ignore-platform-reqs --repository-url=https://repo.magento.com/ "${MAGENTO_COMPOSER}" .
 
+  # Hack around dotmailer breaking Swagger page (https://magento.stackexchange.com/a/318010)
+  jq --indent 2 --argjson replace '{
+    "replace": {
+        "dotmailer/dotmailer-magento2-extension": "*",
+        "dotmailer/dotmailer-magento2-extension-package": "*",
+        "dotmailer/dotmailer-magento2-extension-enterprise": "*",
+        "dotmailer/dotmailer-magento2-extension-chat": "*"
+    }
+  }' '. + $replace' composer.json | sponge composer.json
+
   echo "Downloading required packages..."
 
-  # Pin kiwicommerce/module-cron-scheduler to v1.0.7 to support Magento versions >= v2.3.5
+  # - Pin kiwicommerce/module-cron-scheduler to v1.0.7 to support Magento versions >= v2.3.5
   run_composer require --prefer-dist --ignore-platform-reqs \
     kiwicommerce/module-cron-scheduler=1.0.7 \
     kiwicommerce/module-admin-activity \
