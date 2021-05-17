@@ -1,0 +1,43 @@
+require 'fileutils'
+
+# Source environment variables from a `.env` file if it exists
+env_file = File.join(__dir__, ".env")
+if File.exist?(env_file) and File.file?(env_file)
+  File.readlines(env_file)
+    .filter { |line| line =~ /^[^#].*=.+/ }
+    .map { |line| line.strip.split("=") }
+    .each { |values| ENV[values[0]] = values[1] }
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+
+  config.vm.disk :disk, size: "20GB", primary: true
+  config.vm.network "forwarded_port", guest: 8091, host: 8091
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.memory = 4 * 1024
+  end
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "..", "/plugins-magento2",
+    owner: "www-data",
+    group: "www-data"
+  config.vm.synced_folder ".composer", "/home/www-data/.composer",
+    owner: "www-data",
+    group: "www-data"
+
+  config.trigger.before :up do |trigger|
+    composer_dir = File.join(__dir__, ".composer")
+    unless File.directory?(composer_dir)
+      FileUtils.mkdir_p(composer_dir)
+    end
+  end
+
+  config.vm.provision "shell", path: "provision.sh", env: {
+    "MAGENTO_REPO_KEY"    => ENV["MAGENTO_REPO_KEY"],
+    "MAGENTO_REPO_SECRET" => ENV["MAGENTO_REPO_SECRET"],
+    "DEBUG"               => 1
+  }
+end
