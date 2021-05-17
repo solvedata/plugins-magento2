@@ -71,6 +71,7 @@ composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
             return $this;
         }
     }
+    ```
 1. Create new observer file in `Observer` folder and extend it from `SolveData\Events\Observer\ObserverAbstract` class. Specify your class as handler.
     ```
     class RegisterObserver extends ObserverAbstract
