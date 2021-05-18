@@ -1,4 +1,5 @@
 /magento
 /docker/.env
 .vagrant
+/vagrant/.env
 /vagrant/.composer
