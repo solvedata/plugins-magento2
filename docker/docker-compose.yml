@@ -58,7 +58,8 @@ services:
       - bash
       - -c
       - |
-        echo -e "[client]\ndatabase=${MYSQL_DATABASE}\nuser=${MYSQL_USER}\npassword=${MYSQL_PASSWORD}" > ~/.my.cnf
+        echo -e "[client]\ndatabase=${MYSQL_DATABASE}\nuser=${MYSQL_USER}\npassword=${MYSQL_PASSWORD}" >> /etc/mysql/my.cnf
+        echo -e "[mysqld]\ngeneral_log=on\ngeneral_log_file=/var/log/mysql/general.log" >> /etc/mysql/my.cnf
         exec docker-entrypoint.sh mysqld
     ports:
       - ${MYSQL_HOST_PORT}:${MYSQL_PORT}
