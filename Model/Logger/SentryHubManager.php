@@ -44,6 +44,8 @@ class SentryHubManager
             $hasDsnChanged = $this->last_dsn !== $dsn;
     
             if ($hasValidDsn && (empty($this->last_dsn) || $hasDsnChanged)) {
+                // Set max_value_length, otherwise Sentry defaults to 1kib
+                // which is not even enough for the stacktrace.
                 $client = ClientBuilder::create(['dsn' => $dsn, 'max_value_length' => 8 * 1024])
                     ->setTransportFactory($this->createTransportFactory())
                     ->getClient();
