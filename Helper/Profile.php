@@ -82,26 +82,19 @@ class Profile
      * @param string $email
      * @param int|null $websiteId
      *
-     * @return string
-     *
-     * @throws \Exception
+     * @return string|null
      */
-    public function getProfileIdByEmail(string $email, int $websiteId): string
+    public function getProfileIdByEmail(string $email, int $websiteId): ?string
     {
         $id = $this->getRegistry($email);
         if (!empty($id)) {
             return $id;
         }
+
         $profile = $this->profileRepository->create();
         $id = $profile->getProfileIdByEmail($email, $websiteId);
-        if (empty($id)) {
-            throw new \Exception(sprintf(
-                'SolveData Profile id is empty for "%s" email',
-                $email
-            ));
-        }
 
-        return $id;
+        return empty($id) ? null : $id;
     }
 
     /**
