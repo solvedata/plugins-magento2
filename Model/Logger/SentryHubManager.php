@@ -44,7 +44,7 @@ class SentryHubManager
             $hasDsnChanged = $this->last_dsn !== $dsn;
     
             if ($hasValidDsn && (empty($this->last_dsn) || $hasDsnChanged)) {
-                $client = ClientBuilder::create(['dsn' => $dsn])
+                $client = ClientBuilder::create(['dsn' => $dsn, 'max_value_length' => 8 * 1024])
                     ->setTransportFactory($this->createTransportFactory())
                     ->getClient();
     
