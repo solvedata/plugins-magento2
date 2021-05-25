@@ -29,7 +29,7 @@ class Index extends \Magento\Framework\App\Action\Action
     {
         $quote = $this->checkoutSession->getQuote();
         $context = [
-            "qouteId" => $quote->getId()
+            "quoteId" => $quote->getId()
         ];
 
         $this->getResponse()->representJson(
