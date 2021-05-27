@@ -11,5 +11,11 @@
                    name="solvedata_events_websdk_event_identify"
                    template="SolveData_Events::websdk/event/identify.phtml"/>
         </referenceContainer>
+        <referenceContainer name="before.body.end">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="solvedata_events_context_contextsection"
+                   template="SolveData_Events::context/contextsection.phtml">
+            </block>
+        </referenceContainer>
     </body>
 </page>

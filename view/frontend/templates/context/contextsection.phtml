@@ -1,0 +1,18 @@
+<div class="slv-contextsection"data-bind="scope: 'section'">
+    <span>Store:</span><p data-bind="text: solve().websiteCode"></p>
+    <br/>
+    <span>Quote ID:</span><p data-bind="text: solve().quoteId"></p>    
+</div>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "Magento_Ui/js/core/app": {
+                "components": {
+                    "section": {
+                        "component": "SolveData_Events/js/contextsection"
+                    }
+                }
+            }
+        }
+    }
+</script>
