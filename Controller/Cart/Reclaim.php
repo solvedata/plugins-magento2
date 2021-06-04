@@ -47,18 +47,26 @@ class Reclaim extends \Magento\Framework\App\Action\Action
 
         if (!empty($maskedQuoteId)) {
             try {
+                $existingCartId = $this->getExistingCartId();
+
                 $quoteIdMask = $this->quoteIdMaskFactory->create()->load($maskedQuoteId, 'masked_id');
                 $quote = $this->quoteRepository->get($quoteIdMask->getQuoteId());
                 $this->cart->setQuote($quote);
                 $this->cart->save();
+
+                if (!empty($existingCartId) && $existingCartId !== $quoteIdMask->getQuoteId()) {
+                    // `slv_ecid` is short for "Solve existing cart ID"
+                    // This is a diagnostic query parameter so we understand that the previous "existing" cart has been replaced.
+                    $params['slv_ecid'] = $existingCartId;
+                }
+
+                $redirect = $this->resultRedirectFactory->create();
+                $redirect->setPath('checkout/cart', ['_query' => $params]);
+                return $redirect;
             } catch (\Throwable $t) {
                 $this->logger->debug('failed to reclaim cart', ['masked_quote_id' => $maskedQuoteId, 'params' => $params]);
                 $this->logger->error($t);
             }
-
-            $redirect = $this->resultRedirectFactory->create();
-            $redirect->setPath('checkout/cart', ['_query' => $params]);
-            return $redirect;
         } else {
             $this->logger->warn('empty quote id passed to cart reclaim', ['quote_id' => $maskedQuoteId, 'params' => $params]);
         }
@@ -70,5 +78,17 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         $redirect->setPath('', ['_query' => $params]);
 
         return $redirect;
+    }
+
+    private function getExistingCartId(): ?string {
+        try {
+            $checkoutSession = $this->cart->getCheckoutSession();
+            return $checkoutSession->getQuote()->getId();
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to get existing cart id before reclaiming a cart');
+            $this->logger->warn($t);
+
+            return null;
+        }
     }
 }
