@@ -67,8 +67,7 @@ class Index extends \Magento\Framework\App\Action\Action
             $quoteId = (int) $quoteIdString;
             if (empty($quoteId)) return null;
 
-            // Note this returns "" if the mask id doesn't exist (e.g. when
-            // user is signed in). Grr Magento
+            // Note this returns an empty string when a mask id does not exist (e.g. when the user is signed in).
             return $this->quoteIdToMaskedQuoteId->execute($quoteId);
         } catch (\Throwable $t) {
             $this->logger->error($t);
