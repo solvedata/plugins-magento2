@@ -12,6 +12,8 @@ use Magento\Directory\Model\Country;
 use Magento\Directory\Model\CountryFactory;
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\ProductMetadata;
+use Magento\Framework\UrlInterface;
+use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
@@ -64,6 +66,8 @@ class PayloadConverter
      * @param ProfileHelper $profileHelper
      * @param RegionFactory $regionFactory
      * @param StoreManagerInterface $storeManager
+     * @param QuoteIdMaskFactory $quoteIdMaskFactory
+     * @param Logger $logger
      */
 
     public function __construct(
@@ -71,12 +75,14 @@ class PayloadConverter
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
         StoreManagerInterface $storeManager,
+        QuoteIdMaskFactory $quoteIdMaskFactory,
         Logger $logger
     ) {
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
         $this->storeManager = $storeManager;
+        $this->quoteIdMaskFactory = $quoteIdMaskFactory;
         $this->logger = $logger;
     }
 
@@ -845,6 +851,7 @@ class PayloadConverter
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->prepareAttributesData($area)),
             'provider'   => $this->getOrderProvider($area),
+            'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];
 
         if (!empty($quote['customer_email'])) {
@@ -855,5 +862,42 @@ class PayloadConverter
         }
 
         return $data;
+    }
+
+    private function getReclaimCartUrl(array $quote, array $area): ?string
+    {
+        try {
+            $quoteId = $quote['entity_id'];
+            
+            /** @var $quoteIdMask \Magento\Quote\Model\QuoteIdMask */
+            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
+            if ($quoteIdMask->getMaskedId() === null) {
+                $this->logger->debug('masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
+                $quoteIdMask->setQuoteId($quoteId)->save();
+            }
+
+            $params = [
+                'mq_id' => $quoteIdMask->getMaskedId(),
+                'slv_ac' => '1'
+            ];
+
+            return $this->getLinkUrl($area, 'solve/cart/reclaim', $params);
+        } catch (\Throwable $t) {
+            $this->logger->debug('failed to create reclaim cart url');
+            $this->logger->error($t);
+
+            return null;
+        }
+    }
+
+    private function getLinkUrl(array $area, string $path, array $params): string {
+        $storeData = $this->getStoreDataByArea($area);
+        $storeId = $storeData['store_id'];
+
+        $store = $this->storeManager->getStore($storeId);
+        $storeLinkUrl = $store->getBaseUrl(UrlInterface::URL_TYPE_DIRECT_LINK);
+
+        $url = rtrim($storeLinkUrl, '/') . '/' . $path . '?' . http_build_query($params);
+        return $url;
     }
 }

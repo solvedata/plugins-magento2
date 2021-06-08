@@ -59,12 +59,15 @@ class Sentry extends AbstractHandler
 
     private function logBreadcrumb(HubInterface $hub, array $record): void
     {
+        $message = $record['message'];
+        unset($record['message']);
+
         $breadcrumb = new Breadcrumb(
             Breadcrumb::LEVEL_INFO,
             Breadcrumb::TYPE_DEFAULT,
             "log",
-            $record['message'],
-            []
+            $message,
+            $record
         );
         $hub->addBreadcrumb($breadcrumb);
     }
