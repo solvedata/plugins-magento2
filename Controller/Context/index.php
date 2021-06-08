@@ -8,17 +8,21 @@ use SolveData\Events\Model\Logger;
 
 class Index extends \Magento\Framework\App\Action\Action
 {
-    protected $checkoutSession;
-    protected $jsonHelper;
-    protected $storeManager;
-    protected $logger;
-    protected $websiteRepository;
-    protected $quoteIdToMaskedQuoteId;
+    private $checkoutSession;
+    private $jsonHelper;
+    private $storeManager;
+    private $websiteRepository;
+    private $quoteIdToMaskedQuoteId;
+    private $logger;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Framework\Json\Helper\Data $jsonHelper
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Store\Model\WebsiteRepository $websiteRepository
+     * @param \Magento\Quote\Model\QuoteIdToMaskedQuoteIdInterface $quoteIdToMaskedQuoteId
+     * @param Logger
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
@@ -32,9 +36,9 @@ class Index extends \Magento\Framework\App\Action\Action
         $this->checkoutSession = $checkoutSession;
         $this->jsonHelper = $jsonHelper;
         $this->storeManager = $storeManager;
-        $this->logger = $logger;
         $this->websiteRepository = $websiteRepository;
         $this->quoteIdToMaskedQuoteId = $quoteIdToMaskedQuoteId;
+        $this->logger = $logger;
 
         parent::__construct($context);
     }
@@ -42,7 +46,7 @@ class Index extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $quoteId = $this->checkoutSession->getQuote()->getId();
-        $quoteIdMasked = empty($quoteId) ? null : $this->getQuoteMaskId((int) $quoteId);
+        $quoteIdMasked = $this->getQuoteMaskId($quoteId);
 
         $context = [
             "quoteId" => $quoteId,
@@ -57,13 +61,22 @@ class Index extends \Magento\Framework\App\Action\Action
 
     private function getStore()
     {
-        $websiteId = $this->storeManager->getStore()->getWebsiteId();
-        $website = $this->websiteRepository->getById($websiteId);
+        $website = $this->storeManager->getWebsite();
         return $website->getCode();
     }
 
-    private function getQuoteMaskId($quoteId)
+    private function getQuoteMaskId($quoteIdString)
     {
-        return $this->quoteIdToMaskedQuoteId->execute($quoteId);
+        try {
+            $quoteId = (int) $quoteIdString;
+            if (empty($quoteId)) return null;
+
+            // Note this returns "" if the mask id doesn't exist (e.g. when
+            // user is signed in). Grr Magento
+            return $this->quoteIdToMaskedQuoteId->execute($quoteId);
+        } catch (\Throwable $t) {
+            $this->logger->error($t);
+            return null;
+        }
     }
 }
