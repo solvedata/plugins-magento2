@@ -11,7 +11,6 @@ class Index extends \Magento\Framework\App\Action\Action
     private $checkoutSession;
     private $jsonHelper;
     private $storeManager;
-    private $websiteRepository;
     private $quoteIdToMaskedQuoteId;
     private $logger;
 
@@ -20,7 +19,6 @@ class Index extends \Magento\Framework\App\Action\Action
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Magento\Framework\Json\Helper\Data $jsonHelper
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Store\Model\WebsiteRepository $websiteRepository
      * @param \Magento\Quote\Model\QuoteIdToMaskedQuoteIdInterface $quoteIdToMaskedQuoteId
      * @param Logger
      */
@@ -29,14 +27,12 @@ class Index extends \Magento\Framework\App\Action\Action
         \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Store\Model\WebsiteRepository $websiteRepository,
         \Magento\Quote\Model\QuoteIdToMaskedQuoteIdInterface $quoteIdToMaskedQuoteId,
         Logger $logger
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->jsonHelper = $jsonHelper;
         $this->storeManager = $storeManager;
-        $this->websiteRepository = $websiteRepository;
         $this->quoteIdToMaskedQuoteId = $quoteIdToMaskedQuoteId;
         $this->logger = $logger;
 
