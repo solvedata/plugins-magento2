@@ -12,8 +12,8 @@ use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 class ConvertCart extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
-mutation convertCart($id: String!, $orderId: String, $provider: String!, options: ConvertCartOptions!) {
-    convertCart(id: $id, orderId: $orderId, provider: $provider) {
+mutation convertCart($id: String!, $orderId: String, $provider: String!, $options: ConvertCartOptions!) {
+    convertCart(id: $id, orderId: $orderId, provider: $provider, options: $options) {
         profile_id
     }
 }
