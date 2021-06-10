@@ -71,6 +71,7 @@ case "${command}" in
         echo "Performing first time setup of Magento"
 
         # shellcheck disable=SC1004
+        # shellcheck disable=SC2016
          docker_compose exec php-fpm sh -c '
             sudo -u www-data php bin/magento setup:install \
                 --base-url="http://${MAGENTO_WEB_ADDRESS}:${MAGENTO_WEB_PORT}/" \
