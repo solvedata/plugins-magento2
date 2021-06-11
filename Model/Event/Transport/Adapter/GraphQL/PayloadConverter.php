@@ -854,6 +854,10 @@ class PayloadConverter
             'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];
 
+        if (!empty($quote['created_at'])) {
+            $data['created_at'] = $this->getFormattedDatetime($quote['created_at']);
+        }
+
         if (!empty($quote['customer_email'])) {
             // Defensively handle a failed profile ID lookup in case
             //  the cart can be retroactively linked to a profile.

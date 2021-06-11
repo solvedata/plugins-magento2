@@ -313,6 +313,10 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
+        $quoteIdMaskFactory = $this->getMockBuilder('Magento\Quote\Model\QuoteIdMaskFactory')
+            ->disableOriginalConstructor()
+            ->getMock();
+        
         $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
             ->disableOriginalConstructor()
             ->getMock();
@@ -322,6 +326,7 @@ PAYLOAD;
             $profileHelper,
             $regionFactory,
             $storeManager,
+            $quoteIdMaskFactory,
             $logger
         );
     }
