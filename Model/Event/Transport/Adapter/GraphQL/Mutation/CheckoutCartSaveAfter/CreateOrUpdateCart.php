@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
+namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CheckoutCartSaveAfter;
 
-class CheckoutCartSaveAfter extends MutationAbstract
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
+
+class CreateOrUpdateCart extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateCart($input: CartInput!) {
@@ -23,6 +25,7 @@ GRAPHQL;
      */
     public function getVariables(): array
     {
+        $this->logger->debug("AAAAAAAAAAAA CreateOrUpdateCart", []);
         $event = $this->getEvent();
         $payload = $event['payload'];
 

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
 
-use Magento\Sales\Api\Data\OrderInterface;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 
-class OrderCancelAfter extends MutationAbstract
+class CreateOrUpdateOrder extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation create_or_update_order($input: CreateOrUpdateOrderInput!) {
@@ -29,7 +28,7 @@ GRAPHQL;
         $payload = $this->getEvent()['payload'];
 
         return [
-            'input'    => $this->payloadConverter->convertOrderData(
+            'input' => $this->payloadConverter->convertOrderData(
                 $payload['order'],
                 $payload['orderAllVisibleItems'],
                 $payload['area']

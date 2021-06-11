@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterCustomer;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterCustomerForOrder;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 
-class RegisterCustomerTest extends TestCase
+class RegisterCustomerForOrderTest extends TestCase
 {
     public function testEveryOrderShouldRegisterACustomer(): void
     {
@@ -15,7 +15,7 @@ class RegisterCustomerTest extends TestCase
 }
 PAYLOAD;
 
-        $mutation = new RegisterCustomer(
+        $mutation = new RegisterCustomerForOrder(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);
@@ -34,7 +34,7 @@ PAYLOAD;
 }
 PAYLOAD;
 
-        $mutation = new RegisterCustomer(
+        $mutation = new RegisterCustomerForOrder(
             $this->createPayloadConverter()
         );
         $mutation->setEvent(['payload' => $payload]);

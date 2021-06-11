@@ -388,17 +388,19 @@ class GraphQL extends CurlAbstract
             ) {
                 return $this;
             }
-            $email = reset($body['data']['createOrUpdateProfile']['emails']);
-            $this->logger->debug(sprintf(
-                'Save id "%s" for customer %s',
-                $body['data']['createOrUpdateProfile']['id'],
-                $email
-            ));
-            $this->profileHelper->saveProfileIdByEmail(
-                $email,
-                $body['data']['createOrUpdateProfile']['id'],
-                (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId()
-            );
+            $websiteId = (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId();
+            foreach ($body['data']['createOrUpdateProfile']['emails'] as $email) {
+                $this->logger->debug(sprintf(
+                    'Save id "%s" for customer %s',
+                    $body['data']['createOrUpdateProfile']['id'],
+                    $email
+                ));
+                $this->profileHelper->saveProfileIdByEmail(
+                    $email,
+                    $body['data']['createOrUpdateProfile']['id'],
+                    $websiteId
+                );
+            }
         } catch (\Throwable $t) {
             $this->logger->error($t);
         }

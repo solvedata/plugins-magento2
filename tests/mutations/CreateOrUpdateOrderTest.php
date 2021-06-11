@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateOrder;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 
 class CreateOrUpdateOrderTest extends TestCase

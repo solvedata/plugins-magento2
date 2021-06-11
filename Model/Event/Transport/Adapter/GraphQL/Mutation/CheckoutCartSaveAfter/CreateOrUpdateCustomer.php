@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter;
+namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CheckoutCartSaveAfter;
 
-use Magento\Sales\Api\Data\OrderInterface;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 
-class RegisterCustomer extends MutationAbstract
+class CreateOrUpdateCustomer extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateProfile($input: ProfileInput!) {
@@ -27,20 +26,15 @@ GRAPHQL;
      */
     public function getVariables(): array
     {
+        $this->logger->debug("AAAAAAAAAAAA CreateOrUpdateCustomer", []);
         $event = $this->getEvent();
         $payload = $event['payload'];
 
-        $order = $payload['order'];
-        $area = $payload['area'];
+        $quote = $payload['quote'];
 
         $input = [
-            'email' => $order['customer_email'],
-            'attributes' => json_encode($this->payloadConverter->prepareAttributesData($area))
+            'email' => $quote['customer_email']
         ];
-
-        if (!empty($order['addresses'])) {
-            $input['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
-        }
 
         return ['input' => $input];
     }
