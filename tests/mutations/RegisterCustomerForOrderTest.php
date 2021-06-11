@@ -20,7 +20,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['create_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertTrue($mutation->isAllowed());
     }
@@ -40,7 +40,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['create_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $variables = $mutation->getVariables();
         $this->assertArrayHasKey('email', $variables['input']);

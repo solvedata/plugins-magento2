@@ -3,6 +3,7 @@
 use PHPUnit\Framework\TestCase;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class CreateOrUpdateOrderTest extends TestCase
 {
@@ -16,9 +17,10 @@ class CreateOrUpdateOrderTest extends TestCase
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertTrue($mutation->isAllowed());
     }
@@ -47,9 +49,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $variables = $mutation->getVariables();
 
@@ -101,9 +104,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $variables = $mutation->getVariables();
 
@@ -129,16 +133,25 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
+        $quoteIdMaskFactory = $this->getMockBuilder('Magento\Quote\Model\QuoteIdMaskFactory')
             ->disableOriginalConstructor()
             ->getMock();
         
+        $logger = $this->createLogger();
+
         return new PayloadConverter(
             $countryFactory,
             $profileHelper,
             $regionFactory,
             $storeManager,
+            $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

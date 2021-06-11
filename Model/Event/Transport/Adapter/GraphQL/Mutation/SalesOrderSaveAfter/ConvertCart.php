@@ -13,8 +13,8 @@ use SolveData\Events\Model\Logger;
 class ConvertCart extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
-mutation convertCart($id: String!, $orderId: String, $provider: String!) {
-    convertCart(id: $id, orderId: $orderId, provider: $provider) {
+mutation convertCart($id: String!, $orderId: String, $provider: String!, $options: ConvertCartOptions!) {
+    convertCart(id: $id, orderId: $orderId, provider: $provider, options: $options) {
         profile_id
     }
 }
@@ -90,11 +90,19 @@ GRAPHQL;
     public function getVariables(): array
     {
         $payload = $this->getEvent()['payload'];
+        $order = $payload['order'];
+
+        $occurredAt = !empty($order[OrderInterface::CREATED_AT]) ?
+            $this->payloadConverter->getFormattedDatetime($order[OrderInterface::CREATED_AT])
+            : null;
 
         return [
-            'id'       => $payload['order'][OrderInterface::QUOTE_ID],
-            'orderId'  => $payload['order'][OrderInterface::INCREMENT_ID],
+            'id'       => $order[OrderInterface::QUOTE_ID],
+            'orderId'  => $order[OrderInterface::INCREMENT_ID],
             'provider' => $this->payloadConverter->getOrderProvider($payload['area']),
+            'options'  => [
+                'occurred_at' => $occurredAt
+            ]
         ];
     }
 }

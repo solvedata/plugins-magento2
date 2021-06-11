@@ -4,6 +4,7 @@ use PHPUnit\Framework\TestCase;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\ConvertCart;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class ConvertCartTest extends TestCase
 {
@@ -25,7 +26,8 @@ PAYLOAD;
 
         $mutation = new ConvertCart(
             $this->createConfig(),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -51,7 +53,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig(),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -79,7 +82,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -107,7 +111,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -130,7 +135,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig(),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -156,7 +162,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled, $historicalCartConversion),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -182,7 +189,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -207,7 +215,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -235,7 +244,8 @@ PAYLOAD;
         
         $mutation = new ConvertCart(
             $this->createConfig($anonymousCartsEnabled),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -264,7 +274,8 @@ PAYLOAD;
 
         $mutation = new ConvertCart(
             $this->createConfig(),
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -313,16 +324,25 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
+        $quoteIdMaskFactory = $this->getMockBuilder('Magento\Quote\Model\QuoteIdMaskFactory')
             ->disableOriginalConstructor()
             ->getMock();
         
+        $logger = $this->createLogger();
+
         return new PayloadConverter(
             $countryFactory,
             $profileHelper,
             $regionFactory,
             $storeManager,
+            $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }
