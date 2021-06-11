@@ -26,7 +26,6 @@ GRAPHQL;
      */
     public function getVariables(): array
     {
-        $this->logger->debug("AAAAAAAAAAAA CreateOrUpdateCustomer", []);
         $event = $this->getEvent();
         $payload = $event['payload'];
 
