@@ -17,6 +17,11 @@ mutation createOrUpdateProfile($input: ProfileInput!) {
 }
 GRAPHQL;
 
+    public function isAllowed(): bool
+    {
+        return !empty($this->getEmail());
+    }
+
     /**
      * Get variables for GraphQL request
      *
@@ -26,15 +31,24 @@ GRAPHQL;
      */
     public function getVariables(): array
     {
+        $input = [
+            'email' => $this->getEmail()
+        ];
+
+        return ['input' => $input];
+    }
+
+    private function getEmail(): ?string
+    {
         $event = $this->getEvent();
         $payload = $event['payload'];
 
         $quote = $payload['quote'];
-
-        $input = [
-            'email' => $quote['customer_email']
-        ];
-
-        return ['input' => $input];
+        if (array_key_exists('customer_email', $quote)) {
+            $email = $quote['customer_email'];
+            return empty($email) ? null : $email;
+        } else {
+            return null;
+        }
     }
 }
