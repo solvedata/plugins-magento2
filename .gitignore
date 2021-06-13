@@ -3,4 +3,5 @@
 .vagrant
 /vagrant/.env
 /vagrant/.composer
+.vscode/
 /src
