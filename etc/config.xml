@@ -4,7 +4,7 @@
         <solvedata_events>
             <general>
                 <enabled>0</enabled>
-                <enabled_events>sales_order_save_after,sales_order_shipment_save_after,customer_register_success,customer_account_edited,customer_address_save_after,customer_login,customer_logout,checkout_cart_save_after,newsletter_subscriber_save_commit_after,order_cancel_after</enabled_events>
+                <enabled_events>sales_order_save_after,sales_order_shipment_save_after,customer_register_success,customer_account_edited,customer_address_save_after,customer_login,customer_logout,checkout_cart_save_after,newsletter_subscriber_save_commit_after,order_cancel_after,sales_quote_merge_after</enabled_events>
                 <enabled_anonymous_cart_events>0</enabled_anonymous_cart_events>
                 <enabled_convert_historical_carts>0</enabled_convert_historical_carts>
                 <debug>0</debug>

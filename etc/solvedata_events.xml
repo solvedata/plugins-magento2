@@ -35,5 +35,9 @@
         <event name="order_cancel_after">
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\OrderCancelAfter"/>
         </event>
+        <event name="sales_quote_merge_after">
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateMergedQuote"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateSourceQuote"/>
+        </event>
     </solvedata_events>
 </config>

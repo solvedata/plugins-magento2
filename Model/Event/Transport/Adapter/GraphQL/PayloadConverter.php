@@ -304,6 +304,37 @@ class PayloadConverter
     }
 
     /**
+     * Prepare and return attributes data for orders
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    private function cartAttributes(array $quote, array $area, array $options): array
+    {
+        $attributes = $this->prepareAttributesData($area);
+
+        if (!empty($quote['customer_email'])) {
+            $attributes['magento_customer_email'] = $quote['customer_email'];
+        }
+
+        if (!empty($quote['reserved_order_id'])) {
+            $attributes['magento_reserved_order_id'] = $quote['reserved_order_id'];
+        }
+
+        if (!empty($options['merged_from'])) {
+            $attributes['magento_merged_from_quote'] = $options['merged_from']['entity_id'] ?? 'unknown';
+        }
+
+        if (!empty($options['merged_into'])) {
+            $attributes['magento_merged_into_quote'] = $options['merged_into']['entity_id'] ?? 'unknown';
+        }
+
+        return $attributes;
+    }
+
+    /**
      * Prepare and return attributes data for payments
      *
      * @param array $order
@@ -843,13 +874,13 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    public function convertCartData(array $quote, array $allVisibleItems, array $area): array
+    public function convertCartData(array $quote, array $allVisibleItems, array $area, array $options = []): array
     {
         $data = [
             'id'         => $quote['entity_id'],
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
-            'attributes' => json_encode($this->prepareAttributesData($area)),
+            'attributes' => json_encode($this->cartAttributes($quote, $area, $options)),
             'provider'   => $this->getOrderProvider($area),
             'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];

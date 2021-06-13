@@ -44,4 +44,8 @@
         <observer name="order_cancel_after_data"
                   instance="SolveData\Events\Observer\Sales\OrderCancelAfterObserver" />
     </event>
+        <event name="sales_quote_merge_after">
+        <observer name="sales_quote_merge_after"
+                  instance="SolveData\Events\Observer\Quote\QuoteMergeAfterObserver" />
+    </event>
 </config>
