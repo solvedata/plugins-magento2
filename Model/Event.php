@@ -289,9 +289,13 @@ class Event extends AbstractModel
 
                 $this->lockEventsToProcessing($eventIds);
 
-                $this->webhookForwarder->process($events);
-
+                $webhookResult = $this->webhookForwarder->process($events);
                 $requestResults = $this->transport->send($events);
+
+                // Append the webhook forwarder's result onto the end of each event's results before saving.
+                foreach ($requestResults as &$result) {
+                    $result[] = $webhookResult;
+                }
                 $this->updateEvents($events, $requestResults);
 
                 $this->logger->debug('Finished processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);

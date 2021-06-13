@@ -29,23 +29,31 @@ class WebhookForwarder extends Curl
         $this->moduleList = $moduleList;
     }
 
-    public function process(array $events): void
+    public function process(array $events): array
     {
         try {
             if (!$this->config->isWebhookForwardingEnabled()) {
                 $this->logger->debug('Webhook forwarding is disabled, skipping');
-                return;
+                return ['type' => 'webhook', 'disabled' => true];
             }
     
             $webhookPayload = $this->mapper->map($events);
             $requestId = $this->requestId($events);
-            $this->post($requestId, $webhookPayload);
+
+            $result = $this->post($requestId, $webhookPayload);
+            return $result;
         } catch (\Throwable $t) {
             // Ensure no errors bubble outside the webhook forwarder
-            $this->logger->error('Unexpected error while processing events inside the webhook forwarder', [
-                'exception' => $t,
-                'requestId' => $requestId
-            ]);
+            $result = [
+                'type' => 'webhook',
+                'request' => [
+                    'requestId' => $requestId
+                ],
+                'exception' => $t
+            ];
+            $this->logger->error('Unexpected error while processing events inside the webhook forwarder', $result);
+
+            return $result;
         }
     }
 
@@ -68,21 +76,36 @@ class WebhookForwarder extends Curl
             );
             $response = $this->read();
 
-            $this->logger->debug('Recived response from webhook', [
-                'statusCode' => \Zend_Http_Response::extractCode($response),
-                'response' => \Zend_Http_Response::extractBody($response),
-                'requestId' => $requestId
-            ]);
-            
-            $this->close();
-        } catch (\Throwable $t) {
-            $this->logger->error('Unexpected error while sending events to webhook endpoint', [
-                'exception' => $t,
-                'requestId' => $requestId
-            ]);
-        }
+            $statusCode = \Zend_Http_Response::extractCode($response);
+            $response = \Zend_Http_Response::extractBody($response);
 
-        return [];
+            $this->close();
+
+            $result = [
+                'type' => 'webhook',
+                'request' => [
+                    'requestId' => $requestId
+                ],
+                'response' => [
+                    'code' => $statusCode,
+                    'body' => $response
+                ]
+            ];
+
+            $this->logger->debug('Received response from webhook', $result);
+            return $result;
+        } catch (\Throwable $t) {
+            $result = [
+                'type' => 'webhook',
+                'request' => [
+                    'requestId' => $requestId
+                ],
+                'exception' => $t
+            ];
+
+            $this->logger->error('Unexpected error while sending events to webhook endpoint', $result);
+            return $result;
+        }
     }
 
     private function requestId(array $events): string

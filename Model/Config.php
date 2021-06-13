@@ -30,6 +30,7 @@ class Config
     const XML_PATH_SDK_INIT_CODE                    = 'solvedata_events/sdk/init_code';
     const XML_PATH_WEBHOOK_FORWARDING_IS_ENABLED    = 'solvedata_events/webhook_forwarding/enabled';
     const XML_PATH_WEBHOOK_FORWARDING_URL           = 'solvedata_events/webhook_forwarding/url';
+    const XML_PATH_WEBHOOK_DISABLE_GRAPHQL          = 'solvedata_events/webhook_forwarding/disable_graphql';
 
     /**
      * @var ScopeConfigInterface
@@ -352,5 +353,14 @@ class Config
             ScopeInterface::SCOPE_STORE,
             $store
         ) ?? '';
+    }
+
+    public function isGraphQLDisabled($store = null): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_WEBHOOK_DISABLE_GRAPHQL,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 }

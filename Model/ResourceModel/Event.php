@@ -188,6 +188,10 @@ class Event extends AbstractDb
             $event['request'] = json_encode($eventRequestResults);
 
             foreach ($eventRequestResults as $requestResult) {
+                if (!empty($requestResult['disabled'])) {
+                    continue;
+                }
+
                 if (!empty($requestResult['exception'])) {
                     $event['status'] = EventModel::STATUS_EXCEPTION;
                     break;
@@ -195,7 +199,7 @@ class Event extends AbstractDb
 
                 $responseCode = $requestResult['response']['code'];
                 $event['response_code'] = $responseCode;
-                if ($responseCode == 200 || $responseCode == 201) {
+                if ($responseCode >= 200 && $responseCode <= 202) {
                     $responseBody = json_decode($requestResult['response']['body'], true);
                     if (!empty($responseBody['errors'])) {
 

@@ -25,6 +25,7 @@
             <webhook_forwarding>
                 <enabled>0</enabled>
                 <url backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <disable_graphql>0</disable_graphql>
             </webhook_forwarding>
         </solvedata_events>
     </default>
