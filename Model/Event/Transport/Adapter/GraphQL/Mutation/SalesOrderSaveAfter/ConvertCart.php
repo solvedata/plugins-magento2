@@ -8,6 +8,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class ConvertCart extends MutationAbstract
 {
@@ -32,10 +33,11 @@ GRAPHQL;
     public function __construct(
         Config $config,
         PayloadConverter $payloadConverter,
+        Logger $logger,
         array $data = []
     ) {
         $this->config = $config;
-        parent::__construct($payloadConverter, $data);
+        parent::__construct($payloadConverter, $logger, $data);
     }
 
     /**

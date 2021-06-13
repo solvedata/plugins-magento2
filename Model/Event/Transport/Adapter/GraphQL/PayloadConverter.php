@@ -907,7 +907,7 @@ class PayloadConverter
             /** @var $quoteIdMask \Magento\Quote\Model\QuoteIdMask */
             $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
             if ($quoteIdMask->getMaskedId() === null) {
-                $this->logger->debug('masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
+                $this->logger->debug('Masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
                 $quoteIdMask->setQuoteId($quoteId)->save();
             }
 
@@ -918,8 +918,10 @@ class PayloadConverter
 
             return $this->getLinkUrl($area, 'solve/cart/reclaim', $params);
         } catch (\Throwable $t) {
-            $this->logger->debug('failed to create reclaim cart url');
-            $this->logger->error($t);
+            $this->logger->warn('Failed to create reclaim cart url', [
+                'exception' => $t,
+                'quote' => $quote
+            ]);
 
             return null;
         }

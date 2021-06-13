@@ -64,11 +64,17 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 $redirect->setPath('checkout/cart', ['_query' => $params]);
                 return $redirect;
             } catch (\Throwable $t) {
-                $this->logger->debug('failed to reclaim cart', ['masked_quote_id' => $maskedQuoteId, 'params' => $params]);
-                $this->logger->error($t);
+                $this->logger->error('Failed to reclaim cart: unhandled exception while trying to save cart.', [
+                    'exception' => $t,
+                    'masked_quote_id' => $maskedQuoteId,
+                    'params' => $params
+                ]);
             }
         } else {
-            $this->logger->warn('empty quote id passed to cart reclaim', ['quote_id' => $maskedQuoteId, 'params' => $params]);
+            $this->logger->warn('Failed to reclaim cart: empty quote id passed to cart reclaim.', [
+                'masked_quote_id' => $maskedQuoteId,
+                'params' => $params
+            ]);
         }
 
         // Add `slv_ac_err=1` to the existing query parameters and redirect to the home page
@@ -85,8 +91,9 @@ class Reclaim extends \Magento\Framework\App\Action\Action
             $checkoutSession = $this->cart->getCheckoutSession();
             return $checkoutSession->getQuote()->getId();
         } catch (\Throwable $t) {
-            $this->logger->debug('failed to get existing cart id before reclaiming a cart');
-            $this->logger->warn($t);
+            $this->logger->warn('Failed to get existing cart id before reclaiming a cart.', [
+                'exception' => $t
+            ]);
 
             return null;
         }
