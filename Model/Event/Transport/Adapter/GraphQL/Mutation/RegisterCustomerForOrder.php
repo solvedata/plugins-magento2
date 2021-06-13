@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter;
+namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
 
-use Magento\Sales\Api\Data\OrderInterface;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 
-class RegisterCustomer extends MutationAbstract
+class RegisterCustomerForOrder extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateProfile($input: ProfileInput!) {

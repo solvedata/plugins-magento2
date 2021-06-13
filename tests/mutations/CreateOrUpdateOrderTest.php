@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateOrder;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class CreateOrUpdateOrderTest extends TestCase
 {
@@ -16,7 +17,8 @@ class CreateOrUpdateOrderTest extends TestCase
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
@@ -47,7 +49,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
@@ -101,7 +104,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateOrder(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
@@ -133,10 +137,8 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
-            ->disableOriginalConstructor()
-            ->getMock();
-        
+        $logger = $this->createLogger();
+
         return new PayloadConverter(
             $countryFactory,
             $profileHelper,
@@ -145,5 +147,11 @@ PAYLOAD;
             $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

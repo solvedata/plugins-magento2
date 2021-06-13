@@ -396,16 +396,18 @@ class GraphQL extends CurlAbstract
             ) {
                 return $this;
             }
-            $email = reset($body['data']['createOrUpdateProfile']['emails']);
-            $this->logger->debug('Saving profile_id for customer', [
-              'profile_id' => $body['data']['createOrUpdateProfile']['id'],
-              'email' => $email
-            ]);
-            $this->profileHelper->saveProfileIdByEmail(
-                $email,
-                $body['data']['createOrUpdateProfile']['id'],
-                (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId()
-            );
+            $websiteId = (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId();
+            foreach ($body['data']['createOrUpdateProfile']['emails'] as $email) {
+                $this->logger->debug('Saving profile_id for customer', [
+                    'profile_id' => $body['data']['createOrUpdateProfile']['id'],
+                    'email' => $email
+                  ]);
+                $this->profileHelper->saveProfileIdByEmail(
+                    $email,
+                    $body['data']['createOrUpdateProfile']['id'],
+                    $websiteId
+                );
+            }
         } catch (\Throwable $t) {
             $this->logger->error('Unexpected error saving profile_id for email from GraphQL response', [
                 'exception' => $t,
