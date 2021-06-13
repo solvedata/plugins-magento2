@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SolveData\Events\Model\Logger;
 
 use Jean85\PrettyVersions;
+use Magento\Framework\Module\ModuleList;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Sentry\Client;
 use Sentry\ClientBuilder;
@@ -20,11 +21,14 @@ class SentryHubManager
     
     private $last_dsn;
     private $sentry_hub;
+    private $moduleList;
 
     public function __construct(
-        Config $config
+        Config $config,
+        ModuleList $moduleList
     ) {
         $this->config = $config;
+        $this->moduleList = $moduleList;
 
         $this->last_dsn = null;
         $this->sentry_hub = null;
@@ -44,7 +48,11 @@ class SentryHubManager
             if ($hasValidDsn && (empty($this->last_dsn) || $hasDsnChanged)) {
                 // Set max_value_length, otherwise Sentry defaults to 1kib
                 // which is not even enough for the stacktrace.
-                $client = ClientBuilder::create(['dsn' => $dsn, 'max_value_length' => 8 * 1024])
+                $client = ClientBuilder::create([
+                    'dsn' => $dsn,
+                    'release' => $this->getExtensionVersion(),
+                    'max_value_length' => 8 * 1024,
+                ])
                     ->setTransportFactory($this->createTransportFactory())
                     ->getClient();
     
@@ -81,5 +89,20 @@ class SentryHubManager
             $httpClientFactory,
             $logger
         );
+    }
+
+    /**
+     * Returns the current Magento plugin's version.
+     *
+     * @return string
+     */
+    private function getExtensionVersion(): string
+    {
+        try {
+            return $this->moduleList->getOne('SolveData_Events')['setup_version'];
+        } catch (\Throwable $t) {
+            $this->logger->error('Failed to get extension version.', ['exception' => $t]);
+            return 'unknown';
+        }
     }
 }

@@ -434,7 +434,7 @@ class GraphQL extends CurlAbstract
         try {
             return $this->moduleList->getOne('SolveData_Events')['setup_version'];
         } catch (\Throwable $t) {
-            $this->logger->error($t);
+            $this->logger->error('Failed to get extension version.', ['exception' => $t]);
             return 'unknown';
         }
     }
