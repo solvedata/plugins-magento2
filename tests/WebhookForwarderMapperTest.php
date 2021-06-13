@@ -26,4 +26,22 @@ class WebhookForwarderMapperTest extends TestCase
         $this->assertFalse(isset($firstEventPayload['customer']['password_hash']));
         $this->assertFalse(isset($firstEventPayload['customer']['rp_token']));
     }
+
+    public function testMapperShouldBeAbleToHandleEventsWithNoSenstiveFields()
+    {
+        $mapper = new WebhookForwarderMapper();
+        $webhookPayload = $mapper->map([
+            [
+                'payload' => json_encode([
+                    'customer' => [
+                        'email' => 'test@example.net'
+                    ]
+                ])
+            ]
+        ]);
+
+        $firstEventPayload = $webhookPayload['events'][0]['payload'];
+        
+        $this->assertEquals('test@example.net', $firstEventPayload['customer']['email']);
+    }
 }
