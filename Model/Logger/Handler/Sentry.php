@@ -8,7 +8,7 @@ use Monolog\Handler\AbstractHandler;
 use Monolog\Logger;
 use Sentry\Breadcrumb;
 use Sentry\State\HubInterface;
-use Sentry\Monolog\Handler as SentryHandler;
+use SolveData\Events\Model\Logger\SentryHandler;
 use SolveData\Events\Model\Logger\SentryHubManager;
 
 class Sentry extends AbstractHandler
@@ -59,15 +59,12 @@ class Sentry extends AbstractHandler
 
     private function logBreadcrumb(HubInterface $hub, array $record): void
     {
-        $message = $record['message'];
-        unset($record['message']);
-
         $breadcrumb = new Breadcrumb(
             Breadcrumb::LEVEL_INFO,
             Breadcrumb::TYPE_DEFAULT,
             "log",
-            $message,
-            $record
+            $record['message'] ?? '',
+            $record['context'] ?? []
         );
         $hub->addBreadcrumb($breadcrumb);
     }

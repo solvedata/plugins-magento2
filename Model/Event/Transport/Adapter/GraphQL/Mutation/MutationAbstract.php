@@ -7,6 +7,7 @@ namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
 use Magento\Framework\DataObject;
 use SolveData\Events\Api\Event\Transport\Adapter\GraphQL\MutationInterface;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 abstract class MutationAbstract extends DataObject implements MutationInterface
 {
@@ -18,14 +19,21 @@ abstract class MutationAbstract extends DataObject implements MutationInterface
     protected $payloadConverter;
 
     /**
+     * For use in subclasses mainly
+     */
+    protected $logger;
+
+    /**
      * @param PayloadConverter $payloadConverter
      * @param array $data
      */
     public function __construct(
         PayloadConverter $payloadConverter,
+        Logger $logger,
         array $data = []
     ) {
         $this->payloadConverter = $payloadConverter;
+        $this->logger = $logger;
         parent::__construct($data);
     }
 

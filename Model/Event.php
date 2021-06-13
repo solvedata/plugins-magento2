@@ -307,8 +307,11 @@ class Event extends AbstractModel
                 $requestResults = array_fill_keys($eventIds, $errorResult);
                 $this->updateEvents($events, $requestResults);
 
-                $this->logger->debug('Error processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
-                $this->logger->critical($t);
+                $this->logger->critical('Error processing event', [
+                    'exception' => $t,
+                    'event_entity_ids' => $eventIds,
+                    'cron_id' => $cronId
+                ]);
             }
 
             $eventsToProcess = array_slice($eventsToProcess, $transactionBatchSize);
