@@ -107,8 +107,9 @@ class Reclaim extends \Magento\Framework\App\Action\Action
             $checkoutSession = $this->cart->getCheckoutSession();
             return $checkoutSession->getQuote()->getId();
         } catch (\Throwable $t) {
-            $this->logger->debug('failed to get existing cart id before reclaiming a cart');
-            $this->logger->warn($t);
+            $this->logger->warn('Failed to get existing cart id before reclaiming a cart.', [
+                'exception' => $t
+            ]);
 
             return null;
         }
