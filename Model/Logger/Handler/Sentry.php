@@ -8,7 +8,7 @@ use Monolog\Handler\AbstractHandler;
 use Monolog\Logger;
 use Sentry\Breadcrumb;
 use Sentry\State\HubInterface;
-use Sentry\Monolog\Handler as SentryHandler;
+use SolveData\Events\Model\Logger\SentryHandler;
 use SolveData\Events\Model\Logger\SentryHubManager;
 
 class Sentry extends AbstractHandler

@@ -6,14 +6,12 @@ namespace SolveData\Events\Model\Logger;
 
 use Jean85\PrettyVersions;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Sentry\Breadcrumb;
 use Sentry\Client;
 use Sentry\ClientBuilder;
 use Sentry\HttpClient\HttpClientFactory;
 use Sentry\State\Hub;
 use Sentry\State\HubInterface;
 use Sentry\Transport\DefaultTransportFactory;
-use Sentry\Transport\TransportInterface;
 use SolveData\Events\Model\Config;
 
 class SentryHubManager
