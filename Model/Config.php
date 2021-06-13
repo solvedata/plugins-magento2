@@ -20,6 +20,7 @@ class Config
     const XML_PATH_CRON_BATCH_SIZE                  = 'solvedata_events/general/cron_batch_size';
     const XML_PATH_TRANSACTION_BATCH_SIZE           = 'solvedata_events/general/transaction_batch_size';
     const XML_PATH_SENTRY_DSN                       = 'solvedata_events/general/sentry_dsn';
+    const XML_PATH_HMAC_SECRET                      = 'solvedata_events/general/hmac_secret';
     const XML_PATH_EVENT_RETENTION_PERIOD           = 'solvedata_events/general/event_retention_period';
     const XML_PATH_API_URL                          = 'solvedata_events/api/url';
     const XML_PATH_API_KEY                          = 'solvedata_events/api/key';
@@ -198,6 +199,15 @@ class Config
     {
         return $this->scopeConfig->getValue(
             self::XML_PATH_SENTRY_DSN,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        ) ?? '';
+    }
+
+    public function getHmacSecret($store = null): string
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_HMAC_SECRET,
             ScopeInterface::SCOPE_STORE,
             $store
         ) ?? '';
