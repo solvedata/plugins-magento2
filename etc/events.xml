@@ -46,6 +46,6 @@
     </event>
         <event name="sales_quote_merge_after">
         <observer name="sales_quote_merge_after"
-                  instance="SolveData\Events\Observer\Quote\QuoteMergeAfterObserver" />
+                  instance="SolveData\Events\Observer\Sales\QuoteMergeAfterObserver" />
     </event>
 </config>

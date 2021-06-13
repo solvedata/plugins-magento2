@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Observer\Quote;
+namespace SolveData\Events\Observer\Sales;
 
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\EventRepository;
-use SolveData\Events\Model\Event\RegisterHandler\Quote\QuoteMerge;
+use SolveData\Events\Model\Event\RegisterHandler\Sales\QuoteMerge;
 use SolveData\Events\Model\Logger;
 use SolveData\Events\Observer\ObserverAbstract;
 

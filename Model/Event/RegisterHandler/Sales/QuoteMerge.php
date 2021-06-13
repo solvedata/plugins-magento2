@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\RegisterHandler\Quote;
+namespace SolveData\Events\Model\Event\RegisterHandler\Sales;
 
-use Magento\Checkout\Model\Cart;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Exception\NoSuchEntityException;
 use SolveData\Events\Model\Event\RegisterHandler\EventAbstract;
@@ -52,12 +51,12 @@ class QuoteMerge extends EventAbstract
         /** @var Quote $source */
         $source = $event->getSource();
         
-        // Add final price to payload
+        // Add final price to merged quote's items
         foreach ($quote->getAllVisibleItems() as $item) {
             $item->setData('final_price', $item->getProduct()->getFinalPrice());
         }
 
-        // Add final price to payload
+        // Add final price to source quote's items
         foreach ($source->getAllVisibleItems() as $item) {
             $item->setData('final_price', $item->getProduct()->getFinalPrice());
         }
