@@ -876,7 +876,7 @@ class PayloadConverter
             /** @var $quoteIdMask \Magento\Quote\Model\QuoteIdMask */
             $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
             if ($quoteIdMask->getMaskedId() === null) {
-                $this->logger->debug('masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
+                $this->logger->debug('Masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
                 $quoteIdMask->setQuoteId($quoteId)->save();
             }
 

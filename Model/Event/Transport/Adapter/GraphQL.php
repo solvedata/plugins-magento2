@@ -230,10 +230,9 @@ class GraphQL extends CurlAbstract
      */
     protected function getOrderedMutationsByEvents(array $events): array
     {
-        $this->logger->debug(sprintf(
-            'Get ordered mutations for events %s',
-            json_encode(array_column($events, ResourceModel::ENTITY_ID))
-        ));
+        $this->logger->debug('Getting ordered mutations for events', [
+            'event_ids' => array_column($events, ResourceModel::ENTITY_ID)
+        ]);
         $orderedMutations = [];
         foreach ($events as $event) {
             $mutations = $this->dataConfig->get(sprintf('solvedata_events/%s', $event['name']));
@@ -259,7 +258,7 @@ class GraphQL extends CurlAbstract
      */
     protected function getOrderedMutationsByEvent(array $event)
     {
-        $this->logger->debug(sprintf('Get ordered mutations for event #%d', $event[ResourceModel::ENTITY_ID]));
+        $this->logger->debug('Getting ordered mutations for event', ['event_id' => $event[ResourceModel::ENTITY_ID]]);
         $orderedMutations = [];
         $mutations = $this->dataConfig->get(sprintf('solvedata_events/%s', $event['name']));
         foreach ($mutations as $mutation) {
@@ -284,11 +283,12 @@ class GraphQL extends CurlAbstract
      */
     protected function prepareEventMutations(array $event, array $mutations)
     {
+        $eventId = $event[ResourceModel::ENTITY_ID];
         try {
-            $this->logger->debug(sprintf(
-                'Start preparing request for event #%d by mutations',
-                $event[ResourceModel::ENTITY_ID]
-            ));
+            $this->logger->debug('Preparing mutations for event', [
+                'event_id' => $eventId
+            ]);
+
             $requestsData = [];
             foreach ($mutations as $key => $mutationClass) {
                 $requestData = $this->prepareEventMutation($event, $mutationClass);
@@ -300,15 +300,17 @@ class GraphQL extends CurlAbstract
                     $requestData
                 );
             }
-            $this->logger->debug(sprintf(
-                'All requests for event #%d: %s',
-                $event[ResourceModel::ENTITY_ID],
-                json_encode($requestsData)
-            ));
+            $this->logger->debug('Prepared all mutations for event', [
+                'event_id' => $eventId,
+                'mutations' => $requestsData
+            ]);
 
             return $requestsData;
         } catch (\Exception $e) {
-            $this->logger->error($e);
+            $this->logger->error('Unexpected error preparing mutations for event', [
+                'exception' => $e,
+                'event_id' => $eventId
+            ]);
 
             return [];
         }
@@ -324,22 +326,25 @@ class GraphQL extends CurlAbstract
      */
     protected function prepareEventMutation(array $event, string $mutationClass)
     {
+        $eventId = $event[ResourceModel::ENTITY_ID];
+        $eventName = $event['name'];
         $requestId = self::generateRequestId($event);
-        $this->logger->debug(sprintf(
-            'Start preparing request for event #%d by mutation class %s with request id %s',
-            $event[ResourceModel::ENTITY_ID],
-            $mutationClass,
-            $requestId
-        ));
+
+        $this->logger->debug('Preparing mutation for event', [
+            'event_id' => $eventId,
+            'mutation' => $mutationClass,
+            'request_id' => $requestId
+        ]);
+
         /** @var MutationInterface $mutation */
         $mutation = $this->objectManager->get($mutationClass);
         $mutation->setEvent($event);
         if (!$mutation->isAllowed()) {
-            $this->logger->debug(sprintf(
-                '%s mutation for %s event is skipped',
-                get_class($mutation),
-                $event['name']
-            ));
+            $this->logger->debug('Skipping mutation for event', [
+                'event_id' => $eventId,
+                'event_name' => $eventName,
+                'mutation' => get_class($mutation)
+            ]);
 
             return null;
         }
@@ -364,12 +369,12 @@ class GraphQL extends CurlAbstract
                 ]),
             ],
         ];
-        $this->logger->debug(sprintf(
-            'Ready request for event #%d and mutationClass(%s): %s',
-            $event[ResourceModel::ENTITY_ID],
-            $mutationClass,
-            json_encode($result)
-        ));
+        $this->logger->debug('Prepared mutation for event', [
+            'event_id' => $eventId,
+            'event_name' => $eventName,
+            'mutation' => get_class($mutation),
+            'result' => $result
+        ]);
 
         return $result;
     }
@@ -402,7 +407,10 @@ class GraphQL extends CurlAbstract
                 (int)$this->storeManager->getStore($event['store_id'])->getWebsiteId()
             );
         } catch (\Throwable $t) {
-            $this->logger->error($t);
+            $this->logger->error('Unexpected error saving profile_id for email from GraphQL response', [
+                'exception' => $t,
+                'response' => $body
+            ]);
         }
 
         return $this;
