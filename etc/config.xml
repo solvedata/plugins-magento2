@@ -22,6 +22,10 @@
             <sdk>
                 <enabled>0</enabled>
             </sdk>
+            <webhook_forwarding>
+                <enabled>0</enabled>
+                <url backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+            </webhook_forwarding>
         </solvedata_events>
     </default>
 </config>
