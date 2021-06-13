@@ -31,13 +31,22 @@ class WebhookForwarder extends Curl
 
     public function process(array $events): void
     {
-        if (!$this->config->isWebhookForwardingEnabled()) {
-            return;
+        try {
+            if (!$this->config->isWebhookForwardingEnabled()) {
+                $this->logger->debug('Webhook forwarding is disabled, skipping');
+                return;
+            }
+    
+            $webhookPayload = $this->mapper->map($events);
+            $requestId = $this->requestId($events);
+            $this->post($requestId, $webhookPayload);
+        } catch (\Throwable $t) {
+            // Ensure no errors bubble outside the webhook forwarder
+            $this->logger->error('Unexpected error while processing events inside the webhook forwarder', [
+                'exception' => $t,
+                'requestId' => $requestId
+            ]);
         }
-
-        $webhookPayload = $this->mapper->map($events);
-        $requestId = $this->requestId($events);
-        $this->post($requestId, $webhookPayload);
     }
 
     private function post(string $requestId, array $payload): array
@@ -45,6 +54,7 @@ class WebhookForwarder extends Curl
         try {
             $url = $this->config->getWebhookForwardingUrl();
 
+            $this->logger->debug('Sending webhook request', ['requestId' => $requestId]);
             $this->write(
                 \Zend_Http_Client::POST,
                 $url,
@@ -58,12 +68,18 @@ class WebhookForwarder extends Curl
             );
             $response = $this->read();
 
-            // 'body' => \Zend_Http_Response::extractBody($response),
-            // 'code' => \Zend_Http_Response::extractCode($response),
+            $this->logger->debug('Recived response from webhook', [
+                'statusCode' => \Zend_Http_Response::extractCode($response),
+                'response' => \Zend_Http_Response::extractBody($response),
+                'requestId' => $requestId
+            ]);
             
             $this->close();
         } catch (\Throwable $t) {
-            $this->logger->error($t);
+            $this->logger->error('Unexpected error while sending events to webhook endpoint', [
+                'exception' => $t,
+                'requestId' => $requestId
+            ]);
         }
 
         return [];
