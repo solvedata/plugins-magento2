@@ -3,3 +3,4 @@
 .vagrant
 /vagrant/.env
 /vagrant/.composer
+/src
