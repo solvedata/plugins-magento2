@@ -111,17 +111,18 @@ class GraphQL extends CurlAbstract
      */
     protected function request(array $event): array
     {
+        $eventId = $event[ResourceModel::ENTITY_ID];
         $result = [];
 
         try {
-            $this->logger->debug(sprintf('Start request for event #%d', $event[ResourceModel::ENTITY_ID]));
+            $this->logger->debug('Starting requests for event', ['event_id' => $eventId]);
             $orderedMutations = $this->getOrderedMutationsByEvent($event);
             foreach ($orderedMutations as $mutationClass) {
                 $requestData = $this->prepareEventMutation($event, $mutationClass);
                 if (empty($requestData)) {
                     continue;
                 }
-                $this->logger->debug(sprintf('Send request: %s', json_encode($requestData)));
+                $this->logger->debug('Sending GraphQL request', ['request' => $requestData]);
                 $this->write(
                     \Zend_Http_Client::POST,
                     $requestData['url'],
@@ -140,20 +141,22 @@ class GraphQL extends CurlAbstract
                         'code' => \Zend_Http_Response::extractCode($response),
                     ],
                 ];
-                $this->logger->debug(sprintf('Result of request: %s', json_encode($requestResult)));
+                $this->logger->debug('Received response for GraphQL request', [
+                    'event_id' => $eventId,
+                    'result' => $requestResult
+                ]);
                 $this->close();
                 $result[] = $requestResult;
                 $this->afterRequest($event, $requestResult['response']['body']);
             }
         } catch (\Throwable $t) {
-            $this->logger->error($t);
+            $this->logger->error('Unexpected error while sending GraphQL requests for event', [
+                'exception' => $t,
+                'event_id' => $eventId
+            ]);
             $result[] = ['exception' => "$t"];
         }
-        $this->logger->debug(sprintf(
-            'Request result: %s',
-            json_encode($result)
-        ));
-        $this->logger->debug('Finish request');
+        $this->logger->debug('Finished sending requests for event', ['event_id' => $eventId]);
 
         return $result;
     }
@@ -389,11 +392,10 @@ class GraphQL extends CurlAbstract
                 return $this;
             }
             $email = reset($body['data']['createOrUpdateProfile']['emails']);
-            $this->logger->debug(sprintf(
-                'Save id "%s" for customer %s',
-                $body['data']['createOrUpdateProfile']['id'],
-                $email
-            ));
+            $this->logger->debug('Saving profile_id for customer', [
+              'profile_id' => $body['data']['createOrUpdateProfile']['id'],
+              'email' => $email
+            ]);
             $this->profileHelper->saveProfileIdByEmail(
                 $email,
                 $body['data']['createOrUpdateProfile']['id'],
