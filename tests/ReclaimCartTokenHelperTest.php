@@ -54,6 +54,33 @@ class ReclaimCartTokenHelperTest extends TestCase
         $this->assertEquals($expectedQuoteId, $parsedQuoteId);
     }
 
+    public function testWillReturnNullIfTokenIsInvalid(): void
+    {
+        $secret = 'hmac secret';
+        $token = 'not a valid token';
+
+        $helper = new ReclaimCartTokenHelper($this->createLogger());
+        $parsedQuoteId = $helper->parseAndValidateToken($token, $secret);
+
+        $this->assertNull($parsedQuoteId);
+    }
+
+    public function testWillReturnNullIfHmacIsInvalid(): void
+    {
+        $secret = 'hmac secret';
+        $token = base64_encode(json_encode([
+            "id" => 'a quote id',
+            "sa" => 1816260486,
+            "ts" => 1623573129,
+            "hm" => "not the expected hmac"
+        ]));
+
+        $helper = new ReclaimCartTokenHelper($this->createLogger());
+        $parsedQuoteId = $helper->parseAndValidateToken($token, $secret);
+
+        $this->assertNull($parsedQuoteId);
+    }
+
     private function createLogger(): Logger
     {
         $logger = $this->getMockBuilder(Logger::class)

@@ -886,6 +886,7 @@ class PayloadConverter
             $secret = $this->config->getHmacSecret();
 
             if (empty($secret)) {
+                $this->logger->warn('Could not generate a reclaim cart url as no hmac secret is configured');
                 return null;
             }
 
