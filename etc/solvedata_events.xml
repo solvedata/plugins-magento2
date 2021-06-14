@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="solvedata_events.xsd">
     <solvedata_events>
         <event name="customer_register_success">
-            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerRegisterSuccess"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerRegisterSuccess"/>
         </event>
         <event name="customer_account_edited">
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerAccountEdited"/>
@@ -11,29 +11,36 @@
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerAddressSaveAfter"/>
         </event>
         <event name="customer_login">
-            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerLogin"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerLogin"/>
         </event>
         <event name="customer_logout">
-            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerLogout"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerLogout"/>
         </event>
         <event name="checkout_cart_save_after">
-            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CheckoutCartSaveAfter"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CheckoutCartSaveAfter\CreateOrUpdateCustomer"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CheckoutCartSaveAfter\CreateOrUpdateCart"/>
         </event>
         <event name="newsletter_subscriber_save_commit_after">
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\NewsletterSubscriberSaveCommitAfter"/>
         </event>
+
+        <!-- Order events -->
+
         <event name="sales_order_save_after">
-            <mutation order="10" class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterCustomer"/>
-            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateOrder"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\RegisterCustomerForOrder"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder"/>
+
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\ConvertCart"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdatePayment"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateReturn"/>
         </event>
         <event name="sales_order_shipment_save_after">
-            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderShipmentSaveAfter"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\RegisterCustomerForOrder"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder"/>
         </event>
         <event name="order_cancel_after">
-            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\OrderCancelAfter"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\RegisterCustomerForOrder"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder"/>
         </event>
         <event name="sales_quote_merge_after">
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateMergedQuote"/>

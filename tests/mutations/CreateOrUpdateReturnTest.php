@@ -3,6 +3,7 @@
 use PHPUnit\Framework\TestCase;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateReturn;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class CreateOrUpdateReturnTest extends TestCase
 {
@@ -16,7 +17,8 @@ class CreateOrUpdateReturnTest extends TestCase
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -35,7 +37,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -56,7 +59,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -77,7 +81,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -103,7 +108,8 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['payload' => $payload]);
 
@@ -148,10 +154,8 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
-            ->disableOriginalConstructor()
-            ->getMock();
-        
+        $logger = $this->createLogger();
+
         return new PayloadConverter(
             $countryFactory,
             $profileHelper,
@@ -160,5 +164,11 @@ PAYLOAD;
             $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

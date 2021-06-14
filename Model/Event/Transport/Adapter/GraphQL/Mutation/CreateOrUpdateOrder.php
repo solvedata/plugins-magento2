@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter;
+namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
 
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 

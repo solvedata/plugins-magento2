@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\RegisterCustomer;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\RegisterCustomerForOrder;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
-class RegisterCustomerTest extends TestCase
+class RegisterCustomerForOrderTest extends TestCase
 {
     public function testEveryOrderShouldRegisterACustomer(): void
     {
@@ -15,8 +16,9 @@ class RegisterCustomerTest extends TestCase
 }
 PAYLOAD;
 
-        $mutation = new RegisterCustomer(
-            $this->createPayloadConverter()
+        $mutation = new RegisterCustomerForOrder(
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['create_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
@@ -34,8 +36,9 @@ PAYLOAD;
 }
 PAYLOAD;
 
-        $mutation = new RegisterCustomer(
-            $this->createPayloadConverter()
+        $mutation = new RegisterCustomerForOrder(
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
         $mutation->setEvent(['create_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
@@ -68,10 +71,8 @@ PAYLOAD;
         $quoteIdMaskFactory = $this->getMockBuilder('Magento\Quote\Model\QuoteIdMaskFactory')
             ->disableOriginalConstructor()
             ->getMock();
-        
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
-            ->disableOriginalConstructor()
-            ->getMock();
+
+        $logger = $this->createLogger();
         
         return new PayloadConverter(
             $countryFactory,
@@ -81,5 +82,11 @@ PAYLOAD;
             $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }
