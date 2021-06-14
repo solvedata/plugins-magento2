@@ -19,6 +19,8 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
+use SolveData\Events\Helper\ReclaimCartTokenHelper;
+use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
 
 class PayloadConverter
@@ -30,6 +32,11 @@ class PayloadConverter
     const ORDER_STATUS_PROCESSED = 'PROCESSED';
     const ORDER_STATUS_RETURNED  = 'RETURNED';
     const ORDER_STATUS_CANCELED  = 'CANCELED';
+
+    /**
+     * @var Config
+     */
+    protected $config;
 
     /**
      * @var CountryFactory
@@ -62,6 +69,7 @@ class PayloadConverter
     protected $countries = [];
 
     /**
+     * @param Config $config
      * @param CountryFactory $countryFactory
      * @param ProfileHelper $profileHelper
      * @param RegionFactory $regionFactory
@@ -71,6 +79,7 @@ class PayloadConverter
      */
 
     public function __construct(
+        Config $config,
         CountryFactory $countryFactory,
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
@@ -78,6 +87,7 @@ class PayloadConverter
         QuoteIdMaskFactory $quoteIdMaskFactory,
         Logger $logger
     ) {
+        $this->config = $config;
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
@@ -872,16 +882,19 @@ class PayloadConverter
     {
         try {
             $quoteId = $quote['entity_id'];
-            
-            /** @var $quoteIdMask \Magento\Quote\Model\QuoteIdMask */
-            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
-            if ($quoteIdMask->getMaskedId() === null) {
-                $this->logger->debug('Masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
-                $quoteIdMask->setQuoteId($quoteId)->save();
+            $now = new \DateTime();
+            $secret = $this->config->getHmacSecret();
+
+            if (empty($secret)) {
+                $this->logger->warn('Could not generate a reclaim cart url as no hmac secret is configured');
+                return null;
             }
 
+            $tokenHelper = new ReclaimCartTokenHelper($this->logger);
+            $token = $tokenHelper->generateReclaimToken($quoteId, $now, $secret);
+
             $params = [
-                'mq_id' => $quoteIdMask->getMaskedId(),
+                'cart' => $token,
                 'slv_ac' => '1'
             ];
 
