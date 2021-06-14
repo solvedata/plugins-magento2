@@ -99,6 +99,10 @@ class GraphQL extends CurlAbstract
      */
     public function send(array $event)
     {
+        if ($this->config->isGraphQLDisabled()) {
+            return [['type' => 'graphql', 'disabled' => true]];
+        }
+
         return $this->request($event);
     }
 
@@ -132,6 +136,7 @@ class GraphQL extends CurlAbstract
                 );
                 $response = $this->read();
                 $requestResult = [
+                    'type' => 'graphql',
                     'request' => [
                         'url' => $requestData['url'],
                         'parameters' => urldecode($requestData['options'][CURLOPT_POSTFIELDS]),
@@ -149,12 +154,12 @@ class GraphQL extends CurlAbstract
                 $result[] = $requestResult;
                 $this->afterRequest($event, $requestResult['response']['body']);
             }
-        } catch (\Throwable $t) {
+        } catch (\Throwable $t) {            
             $this->logger->error('Unexpected error while sending GraphQL requests for event', [
                 'exception' => $t,
                 'event_id' => $eventId
             ]);
-            $result[] = ['exception' => "$t"];
+            $result[] = ['type' => 'graphql', 'exception' => "$t"];
         }
         $this->logger->debug('Finished sending requests for event', ['event_id' => $eventId]);
 
