@@ -6,7 +6,7 @@ namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQ
 
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 
-class CreateOrUpdateMergedQuote extends MutationAbstract
+class CreateOrUpdateDestinationQuote extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOptions!) {
