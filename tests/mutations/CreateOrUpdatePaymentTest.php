@@ -20,7 +20,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -40,7 +40,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -62,7 +62,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -84,7 +84,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertTrue($mutation->isAllowed());
     }
@@ -111,7 +111,7 @@ PAYLOAD;
             $this->createPayloadConverter(),
             $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $variables = $mutation->getVariables();
 
