@@ -7,6 +7,7 @@ namespace SolveData\Events\Controller\Cart;
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
+use Magento\Quote\Model\QuoteFactory;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
 {
@@ -20,18 +21,22 @@ class Reclaim extends \Magento\Framework\App\Action\Action
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Checkout\Model\Cart $cart
      * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
+     * @param QuoteFactory $quoteFactory
      * @param Config $config
+     * @param Logger $logger
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
+        QuoteFactory $quoteFactory,
         Config $config,
         Logger $logger
     ) {
         $this->context = $context;
         $this->cart = $cart;
         $this->quoteRepository = $quoteRepository;
+        $this->quoteFactory = $quoteFactory;
         $this->config = $config;
         $this->logger = $logger;
 
@@ -67,7 +72,12 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 ]);
 
                 $quote = $this->quoteRepository->get($quoteId);
-                $this->cart->setQuote($quote);
+                // Create new quote $anonymousQuote because if the user is not
+                // logged in, and $quote belongs to a customer, then the user
+                // cannot see the cart and gets redirected to the home page
+                $anonymousQuote = $this->quoteFactory->create();
+                $anonymousQuote->merge($quote);
+                $this->cart->setQuote($anonymousQuote);
                 $this->cart->save();
 
                 if (!empty($existingCartId) && $existingCartId !== $quoteId) {
