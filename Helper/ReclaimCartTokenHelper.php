@@ -35,6 +35,8 @@ class ReclaimCartTokenHelper
      */
     public function generateReclaimToken(string $quoteId, DateTime $time, string $secret): string
     {
+        // Include the salt & timestamp in the token to increase the entropy of the HMAC'd message.
+        // The timestamp field is currently only included in case it's useful for future functionality.
         $salt = rand();
         $timestamp = $time->getTimestamp();
 
@@ -61,6 +63,8 @@ class ReclaimCartTokenHelper
         try {
             // URL decode the data before base64 decoding it just in case it has been URL
             //      encoded twice as it passed through different external services.
+            // This usually shouldn't be necessary as the token will be URL decoded in Magento's web framework
+            //      before our controller code is ran. 
             $data = json_decode(base64_decode(urldecode($token)), true);
 
             $quoteId = $data['id'];
@@ -70,7 +74,11 @@ class ReclaimCartTokenHelper
 
             if (empty($quoteId) || empty($salt) || empty($timestamp) || empty($hmac)) {
                 $this->logger->debug('Not all the expected fields exist in the reclaim cart token', [
-                    'token' => $token
+                    'token' => $token,
+                    'quoteId' => $quoteId,
+                    'salt' => $salt,
+                    'timestamp' => $timestamp,
+                    'hmac' => $hmac
                 ]);
                 return null;
             }
