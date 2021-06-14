@@ -42,5 +42,9 @@
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\RegisterCustomerForOrder"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CreateOrUpdateOrder"/>
         </event>
+        <event name="sales_quote_merge_after">
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateDestinationQuote"/>
+            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateSourceQuote"/>
+        </event>
     </solvedata_events>
 </config>
