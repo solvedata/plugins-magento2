@@ -887,7 +887,7 @@ class PayloadConverter
 
             return $this->getLinkUrl($area, 'solve/cart/reclaim', $params);
         } catch (\Throwable $t) {
-            $this->logger->warn('Failed to create reclaim cart url', [
+            $this->logger->warning('Failed to create reclaim cart url', [
                 'exception' => $t,
                 'quote' => $quote
             ]);

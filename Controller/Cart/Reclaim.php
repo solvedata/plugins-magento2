@@ -71,7 +71,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 ]);
             }
         } else {
-            $this->logger->warn('Failed to reclaim cart: empty quote id passed to cart reclaim.', [
+            $this->logger->warning('Failed to reclaim cart: empty quote id passed to cart reclaim.', [
                 'masked_quote_id' => $maskedQuoteId,
                 'params' => $params
             ]);
@@ -91,7 +91,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
             $checkoutSession = $this->cart->getCheckoutSession();
             return $checkoutSession->getQuote()->getId();
         } catch (\Throwable $t) {
-            $this->logger->warn('Failed to get existing cart id before reclaiming a cart.', [
+            $this->logger->warning('Failed to get existing cart id before reclaiming a cart.', [
                 'exception' => $t
             ]);
 

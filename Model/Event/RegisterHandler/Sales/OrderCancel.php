@@ -25,11 +25,15 @@ class OrderCancel extends EventAbstract
         $order = $observer->getEvent()->getOrder();
         try {
             if (empty($order->getState())) {
-                $this->logger->info('order state is empty for order ' . $order->getEntityId());
+                // Throw an exception in order to generate a backtrace on the warning
                 throw new \Exception('Order state is empty');
             }
         } catch (\Exception $e) {
-            $this->logger->warning($e);
+            $this->logger->warning('Order state is empty', [
+                'exception' => $e,
+                'entityId' => $order->getEntityId(),
+                'eventName' => $this->getEventName()
+            ]);
         }
 
         return $this;
