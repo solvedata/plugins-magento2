@@ -19,6 +19,8 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
+use SolveData\Events\Helper\ReclaimCartTokenHelper;
+use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
 
 class PayloadConverter
@@ -30,6 +32,11 @@ class PayloadConverter
     const ORDER_STATUS_PROCESSED = 'PROCESSED';
     const ORDER_STATUS_RETURNED  = 'RETURNED';
     const ORDER_STATUS_CANCELED  = 'CANCELED';
+
+    /**
+     * @var Config
+     */
+    protected $config;
 
     /**
      * @var CountryFactory
@@ -62,6 +69,7 @@ class PayloadConverter
     protected $countries = [];
 
     /**
+     * @param Config $config
      * @param CountryFactory $countryFactory
      * @param ProfileHelper $profileHelper
      * @param RegionFactory $regionFactory
@@ -71,6 +79,7 @@ class PayloadConverter
      */
 
     public function __construct(
+        Config $config,
         CountryFactory $countryFactory,
         ProfileHelper $profileHelper,
         RegionFactory $regionFactory,
@@ -78,6 +87,7 @@ class PayloadConverter
         QuoteIdMaskFactory $quoteIdMaskFactory,
         Logger $logger
     ) {
+        $this->config = $config;
         $this->countryFactory = $countryFactory;
         $this->profileHelper = $profileHelper;
         $this->regionFactory = $regionFactory;
@@ -298,6 +308,37 @@ class PayloadConverter
 
         if (!empty($order[OrderInterface::EXTENSION_ATTRIBUTES_KEY]['is_import_to_solve_data'])) {
             $attributes['imported_at'] = $this->getFormattedDatetime();
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Prepare and return attributes data for orders
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    private function cartAttributes(array $quote, array $area, array $options): array
+    {
+        $attributes = $this->prepareAttributesData($area);
+
+        if (!empty($quote['customer_email'])) {
+            $attributes['magento_customer_email'] = $quote['customer_email'];
+        }
+
+        if (!empty($quote['reserved_order_id'])) {
+            $attributes['magento_reserved_order_id'] = $quote['reserved_order_id'];
+        }
+
+        if (!empty($options['merged_from'])) {
+            $attributes['magento_merged_from_quote'] = $options['merged_from']['entity_id'] ?? 'unknown';
+        }
+
+        if (!empty($options['merged_into'])) {
+            $attributes['magento_merged_into_quote'] = $options['merged_into']['entity_id'] ?? 'unknown';
         }
 
         return $attributes;
@@ -843,13 +884,13 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    public function convertCartData(array $quote, array $allVisibleItems, array $area): array
+    public function convertCartData(array $quote, array $allVisibleItems, array $area, array $options = []): array
     {
         $data = [
             'id'         => $quote['entity_id'],
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
-            'attributes' => json_encode($this->prepareAttributesData($area)),
+            'attributes' => json_encode($this->cartAttributes($quote, $area, $options)),
             'provider'   => $this->getOrderProvider($area),
             'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];
@@ -872,16 +913,19 @@ class PayloadConverter
     {
         try {
             $quoteId = $quote['entity_id'];
-            
-            /** @var $quoteIdMask \Magento\Quote\Model\QuoteIdMask */
-            $quoteIdMask = $this->quoteIdMaskFactory->create()->load($quoteId, 'quote_id');
-            if ($quoteIdMask->getMaskedId() === null) {
-                $this->logger->debug('Masked quote id did not exist, creating a new masked id', ['quoteId' => $quoteId]);
-                $quoteIdMask->setQuoteId($quoteId)->save();
+            $now = new \DateTime();
+            $secret = $this->config->getHmacSecret();
+
+            if (empty($secret)) {
+                $this->logger->warn('Could not generate a reclaim cart url as no hmac secret is configured');
+                return null;
             }
 
+            $tokenHelper = new ReclaimCartTokenHelper($this->logger);
+            $token = $tokenHelper->generateReclaimToken($quoteId, $now, $secret);
+
             $params = [
-                'mq_id' => $quoteIdMask->getMaskedId(),
+                'cart' => $token,
                 'slv_ac' => '1'
             ];
 

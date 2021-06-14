@@ -65,7 +65,8 @@ abstract class ObserverAbstract implements ObserverInterface
 
             $this->handler->process($observer);
         } catch (\Throwable $throwable) {
-            $this->logger->debug($throwable->getMessage());
+            $this->logger->debug('Failed to process event');
+            $this->logger->error($throwable);
         }
 
         return $this;

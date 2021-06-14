@@ -27,7 +27,7 @@ class Transport
      *
      * @param array $events
      *
-     * @return int[]
+     * @return array[]
      *
      * @throws \Exception
      */

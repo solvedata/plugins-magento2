@@ -20,6 +20,7 @@ class Config
     const XML_PATH_CRON_BATCH_SIZE                  = 'solvedata_events/general/cron_batch_size';
     const XML_PATH_TRANSACTION_BATCH_SIZE           = 'solvedata_events/general/transaction_batch_size';
     const XML_PATH_SENTRY_DSN                       = 'solvedata_events/general/sentry_dsn';
+    const XML_PATH_HMAC_SECRET                      = 'solvedata_events/general/hmac_secret';
     const XML_PATH_EVENT_RETENTION_PERIOD           = 'solvedata_events/general/event_retention_period';
     const XML_PATH_API_URL                          = 'solvedata_events/api/url';
     const XML_PATH_API_KEY                          = 'solvedata_events/api/key';
@@ -28,6 +29,9 @@ class Config
     const XML_PATH_ATTEMPT_INTERVAL                 = 'solvedata_events/api/attempt_interval';
     const XML_PATH_SDK_IS_ENABLED                   = 'solvedata_events/sdk/enabled';
     const XML_PATH_SDK_INIT_CODE                    = 'solvedata_events/sdk/init_code';
+    const XML_PATH_WEBHOOK_FORWARDING_IS_ENABLED    = 'solvedata_events/webhook_forwarding/enabled';
+    const XML_PATH_WEBHOOK_FORWARDING_URL           = 'solvedata_events/webhook_forwarding/url';
+    const XML_PATH_WEBHOOK_DISABLE_GRAPHQL          = 'solvedata_events/webhook_forwarding/disable_graphql';
 
     /**
      * @var ScopeConfigInterface
@@ -203,6 +207,15 @@ class Config
         ) ?? '';
     }
 
+    public function getHmacSecret($store = null): string
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_HMAC_SECRET,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        ) ?? '';
+    }
+
     public function getEventRetention($store = null): ?DateInterval
     {
         $period = $this->scopeConfig->getValue(
@@ -332,5 +345,32 @@ class Config
             ScopeInterface::SCOPE_STORE,
             $store
         ) ?? '';
+    }
+
+    public function isWebhookForwardingEnabled($store = null): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_WEBHOOK_FORWARDING_IS_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    public function getWebhookForwardingUrl($store = null): string
+    {
+        return $this->scopeConfig->getValue(
+            self::XML_PATH_WEBHOOK_FORWARDING_URL,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        ) ?? '';
+    }
+
+    public function isGraphQLDisabled($store = null): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_WEBHOOK_DISABLE_GRAPHQL,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 }
