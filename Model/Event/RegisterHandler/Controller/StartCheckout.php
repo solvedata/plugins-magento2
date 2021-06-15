@@ -33,6 +33,25 @@ class StartCheckout extends EventAbstract
     }
 
     /**
+     * Event is allowed
+     *
+     * @param Observer $observer
+     *
+     * @return bool
+     *
+     * @throws NoSuchEntityException
+     */
+    protected function isAllowed(Observer $observer): bool
+    {
+        if (!parent::isAllowed($observer)) {
+            return false;
+        }
+        
+        $quote = $this->cart->getQuote();
+        return !empty($quote) && !empty($quote->getId());
+    }
+
+    /**
      * Get observer data
      *
      * @param Observer $observer

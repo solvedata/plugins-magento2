@@ -17,6 +17,18 @@ mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOpti
 GRAPHQL;
 
     /**
+     * Mutation is allowed
+     *
+     * @return bool
+     */
+    public function isAllowed(): bool
+    {
+        $event = $this->getEvent();
+        $payload = $event['payload'];
+        return !empty($payload['source']['entity_id']);
+    }
+
+    /**
      * Get variables for GraphQL request
      *
      * @return array
