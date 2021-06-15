@@ -329,6 +329,10 @@ class PayloadConverter
             $attributes['magento_customer_email'] = $quote['customer_email'];
         }
 
+        if (!empty($quote['customer_id'])) {
+            $attributes['magento_customer_id'] = $quote['customer_id'];
+        }
+
         if (!empty($quote['reserved_order_id'])) {
             $attributes['magento_reserved_order_id'] = $quote['reserved_order_id'];
         }
