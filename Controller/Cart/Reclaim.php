@@ -85,49 +85,43 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 $params['eq'] = $existingCartId;
                 $params['rq'] = $quoteId;
 
-                if (
-                    !empty($this->customerSession->getCustomerId())
-                    && $quoteId === $existingCartId
-                ) {
-                    // Add a diagnostic query parameter to record that we have "no-op" as the customer's
+                // Easy case: If the customer's current quote is the quote to reclaim, then there is nothing to do.
+                if ($quoteId === $existingCartId) {
+                    // Add a diagnostic query parameter to record that we have "no-op"'d as the customer's
                     //      existing cart is the cart to reclaim.
                     $params['np'] = 1;
-
                     return $this->checkoutRedirection($params);
                 }
-
-                // If the customer is currently logged in and their
-                //   customer ID doesn't match the customer ID on the quote
-                //   then merge the reclaimed quote into their existing quote. 
-                if (
-                    !empty($this->customerSession->getCustomerId())
-                    && $quote->getCustomerId() !== $this->customerSession->getCustomerId()
-                ) {
+                
+                $loggedIn = !empty($this->customerSession->getCustomerId());
+                if ($loggedIn) {
+                    // If the customer is currently logged in merge the reclaimed quote into their existing quote.
                     $existingQuote = $this->cart->getQuote();
                     $this->quoteMerger->merge($existingQuote, $quote);
                     $existingQuote->save();
 
                     // Add a diagnostic query parameter to record that we have merged quotes
-                    $params['qm'] = 1;
+                    $params['mq'] = 1;
 
-                    $this->saveCustomerQuote($existingQuote);
+                    $this->saveQuoteForCustomer($existingQuote);
+                    return $this->checkoutRedirection($params);
+                } else {
+                    if (!empty($quote->getCustomerId()) && $this->config->isCartDisassociationEnabled()) {
+                        // The current user is logged out but the quote belongs to a customer.
+                        // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
+                        $quote->setCustomerId(null);
+                        $quote->save();
+
+                        // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
+                        $params['dq'] = 1;
+                    } else {
+                        // Add a diagnostic query parameter to record that we have reclaimed an anonymous quote.
+                        $params['el'] = 1;
+                    }
+
+                    $this->saveQuoteForCustomer($quote);
                     return $this->checkoutRedirection($params);
                 }
-                
-                if (
-                    !empty($quote->getCustomerId())
-                    && !empty($this->customerSession->getCustomerId())
-                    && $this->config->isCartDisassociationEnabled()
-                ) {
-                    $quote->setCustomerId(null);
-                    $quote->save();
-
-                    // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
-                    $params['dq'] = 1;
-                }
-
-                $this->saveCustomerQuote($quote);
-                return $this->checkoutRedirection($params);
             } catch (\Throwable $t) {
                 $this->logger->error('Failed to reclaim cart: unhandled exception while trying to save cart.', [
                     'exception' => $t,
@@ -151,7 +145,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         return $redirect;
     }
 
-    private function saveCustomerQuote($quote)
+    private function saveQuoteForCustomer($quote)
     {
         $this->cart->setQuote($quote);
         $this->cart->save();
