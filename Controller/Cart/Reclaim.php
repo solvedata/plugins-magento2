@@ -75,12 +75,15 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 // Allow the cart to be accessed even if the user is not logged
                 // in. If the user is actually logged in (with any account) the
                 // cart will be immeidately reassociated with this account. We
-                // also put the old_quote_customer_id in the query params to create a
+                // also put the quote_customer_id in the query params to create a
                 // trail we can use for debugging in the future if need be (by
                 // querying pageviews).
-                $params['old_quote_customer_id'] = $quote->getCustomerId();
-                $quote->setCustomerId(null);
-                $quote->save();
+                $params['quote_customer_id'] = $quote->getCustomerId();
+                $params['did_disassociate_quote_from_customer'] = $this->config->isCartDisassociationEnabled();
+                if ($params['did_disassociate_quote_from_customer']) {
+                    $quote->setCustomerId(null);
+                    $quote->save();
+                }
                 $this->cart->setQuote($quote);
                 $this->cart->save();
 
