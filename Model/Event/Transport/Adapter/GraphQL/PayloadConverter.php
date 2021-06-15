@@ -906,6 +906,10 @@ class PayloadConverter
             $data['profile_id'] = !empty($profileId) ? $profileId : null;
         }
 
+        if (!empty($options['reachedCheckout'])) {
+            $data['reached_checkout'] = true;
+        }
+
         return $data;
     }
 

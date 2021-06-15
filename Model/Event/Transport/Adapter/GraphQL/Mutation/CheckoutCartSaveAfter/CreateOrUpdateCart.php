@@ -28,10 +28,16 @@ GRAPHQL;
         $event = $this->getEvent();
         $payload = $event['payload'];
 
+        $options = [];
+        if (!empty($payload['quoteReachedCheckout'])) {
+            $options['reachedCheckout'] = true;
+        }
+
         $input = $this->payloadConverter->convertCartData(
             $payload['quote'],
             $payload['quoteAllVisibleItems'],
-            $payload['area']
+            $payload['area'],
+            $options
         );
 
         // Use the timestamp of when the event was enqueued as the event's "occurred at" time.
