@@ -262,6 +262,35 @@ class Event extends AbstractModel
     }
 
     /**
+     * Place order collection to events
+     *
+     * @param array $orders
+     *
+     * @return int The number of affected rows.
+     */
+    public function placeCustomEvent(string $eventType, array $payload): int
+    {
+        $events = [];
+        try {
+            $store = $this->eventHelper->getStore();
+            $payload['area'] = $this->eventHelper->getAreaPayloadData();
+
+            $events[] = [
+                'name'                  => "solvedata_$eventType",
+                'status'                => Event::STATUS_NEW,
+                'payload'               => json_encode($payload),
+                'affected_entity_id'    => $store->getId(),
+                'affected_increment_id' => null,
+                'store_id'              => $store->getId()
+            ];
+        } catch (\Exception $e) {
+            $this->logger->critical($e);
+        }
+
+        return !empty($events) ? $this->createEvents($events) : 0;
+    } 
+
+    /**
      * Send events
      *
      * @return bool

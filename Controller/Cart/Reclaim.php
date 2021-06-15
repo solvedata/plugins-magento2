@@ -6,6 +6,7 @@ namespace SolveData\Events\Controller\Cart;
 
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
+use SolveData\Events\Model\EventRepository;
 use SolveData\Events\Model\Logger;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
@@ -15,25 +16,22 @@ class Reclaim extends \Magento\Framework\App\Action\Action
     private $quoteRepository;
     private $config;
     private $logger;
+    private $eventRepository;
 
-    /**
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Checkout\Model\Cart $cart
-     * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
-     * @param Config $config
-     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
         Config $config,
-        Logger $logger
+        Logger $logger,
+        EventRepository $eventRepository
     ) {
         $this->context = $context;
         $this->cart = $cart;
         $this->quoteRepository = $quoteRepository;
         $this->config = $config;
         $this->logger = $logger;
+        $this->eventRepository = $eventRepository;
 
         parent::__construct($context);
     }
@@ -76,6 +74,12 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                     $params['slv_ecid'] = $existingCartId;
                 }
 
+                $this->sendCustomEvent('custom_magento_abandoned_cart_reclaim', [
+                    'quoteId' => $quoteId,
+                    'existingQuoteId' => $existingCartId,
+                    'reclaimToken' => $token
+                ]);
+
                 $redirect = $this->resultRedirectFactory->create();
                 $redirect->setPath('checkout/cart', ['_query' => $params]);
                 return $redirect;
@@ -113,5 +117,11 @@ class Reclaim extends \Magento\Framework\App\Action\Action
 
             return null;
         }
+    }
+
+    private function sendCustomEvent(string $eventType, array $payload): void
+    {
+        $event = $this->eventRepository->create();
+        $event->placeCustomEvent($eventType, $payload);
     }
 }

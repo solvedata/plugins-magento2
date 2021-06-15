@@ -11,6 +11,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Api\Event\Transport\Adapter\GraphQL\MutationInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
 use SolveData\Events\Model\Config;
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\QueueEvent;
 use SolveData\Events\Model\Logger;
 use SolveData\Events\Model\ResourceModel\Event as ResourceModel;
 
@@ -264,6 +265,13 @@ class GraphQL extends CurlAbstract
     protected function getOrderedMutationsByEvent(array $event)
     {
         $this->logger->debug('Getting ordered mutations for event', ['event_id' => $event[ResourceModel::ENTITY_ID]]);
+
+        // Special case for custom events (prefixed with `QueueEvent::SOLVEDATA_EVENT_NAME_PREFIX`)
+        if (QueueEvent::isSolveDataEvent($event['name'])) {
+            // Special case for custom events intended for Solve
+            return [QueueEvent::class];
+        }
+
         $orderedMutations = [];
         $mutations = $this->dataConfig->get(sprintf('solvedata_events/%s', $event['name']));
         foreach ($mutations as $mutation) {
