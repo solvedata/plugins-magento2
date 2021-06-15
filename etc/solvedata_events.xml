@@ -46,10 +46,5 @@
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateDestinationQuote"/>
             <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter\CreateOrUpdateSourceQuote"/>
         </event>
-
-        <!-- Custom solve events -->
-        <event name="solvedata_custom_event">
-            <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomEvent"/>
-        </event>
     </solvedata_events>
 </config>
