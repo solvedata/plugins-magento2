@@ -491,7 +491,7 @@ class PayloadConverter
     public function convertProfileData(array $customer, array $area): array
     {
         $attributes = $this->prepareAttributesData($area);
-        $attributes['magento_customer_id'] = $customer['entity_id'];
+        $attributes['magento_customer_id'] = $customer['entity_id'] ?? null;
 
         $data = [
             'email'      => $customer[CustomerInterface::EMAIL],
