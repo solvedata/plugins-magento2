@@ -7,13 +7,13 @@ namespace SolveData\Events\Controller\Cart;
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
-use Magento\Quote\Model\QuoteFactory;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
 {
     private $context;
     private $cart;
     private $quoteRepository;
+    private $customerSession;
     private $config;
     private $logger;
 
@@ -21,7 +21,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
      * @param \Magento\Framework\App\Action\Context $context
      * @param \Magento\Checkout\Model\Cart $cart
      * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
-     * @param QuoteFactory $quoteFactory
+     * @param \Magento\Customer\Model\Session $customerSession
      * @param Config $config
      * @param Logger $logger
      */
@@ -29,14 +29,14 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         \Magento\Framework\App\Action\Context $context,
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
-        QuoteFactory $quoteFactory,
+        \Magento\Customer\Model\Session $customerSession,
         Config $config,
         Logger $logger
     ) {
         $this->context = $context;
         $this->cart = $cart;
         $this->quoteRepository = $quoteRepository;
-        $this->quoteFactory = $quoteFactory;
+        $this->customerSession = $customerSession;
         $this->config = $config;
         $this->logger = $logger;
 
@@ -72,17 +72,29 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 ]);
 
                 $quote = $this->quoteRepository->get($quoteId);
+
                 // Allow the cart to be accessed even if the user is not logged
                 // in. If the user is actually logged in (with any account) the
-                // cart will be immeidately reassociated with this account. We
-                // also put the quote_customer_id in the query params to create a
-                // trail we can use for debugging in the future if need be (by
-                // querying pageviews).
-                $params['quote_customer_id'] = $quote->getCustomerId();
-                $params['did_disassociate_quote_from_customer'] = $this->config->isCartDisassociationEnabled();
-                if ($params['did_disassociate_quote_from_customer']) {
-                    $quote->setCustomerId(null);
-                    $quote->save();
+                // cart will be immeidately reassociated with this account.
+                //
+                // We also put the qcuid (quote customer id) and scuid (session
+                // customer id) in the query params to create a trail we can
+                // use for debugging in the future if need be (by querying
+                // pageviews).
+                $params['qcuid'] = $quote->getCustomerId();
+                $params['scuid'] = $this->customerSession->getCustomerId();
+
+                if ($this->config->isCartDisassociationEnabled()) {
+                    if (empty($quote->getCustomerId())) {
+                        // Disassociate quote customer
+                        $params['dqcu'] = false;
+                    } else {
+                        $params['dqcu'] = true;
+                        $quote->setCustomerId(null);
+                        $quote->save();
+                    }
+                } else {
+                    $params['dqcu'] = false;
                 }
                 $this->cart->setQuote($quote);
                 $this->cart->save();
