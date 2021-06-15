@@ -144,7 +144,7 @@ class Config
     }
 
     /**
-     * Should set the cart's customer to null when `Reclaim`ing an abandoned cart
+     * Config flag for whether the abandoned cart reclaiming should disassociate any previous Magento customers from the quote.
      *
      * @param integer|null $store
      *
