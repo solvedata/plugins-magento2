@@ -72,12 +72,16 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 ]);
 
                 $quote = $this->quoteRepository->get($quoteId);
-                // Create new quote $anonymousQuote because if the user is not
-                // logged in, and $quote belongs to a customer, then the user
-                // cannot see the cart and gets redirected to the home page
-                $anonymousQuote = $this->quoteFactory->create();
-                $anonymousQuote->merge($quote);
-                $this->cart->setQuote($anonymousQuote);
+                // Allow the cart to be accessed even if the user is not logged
+                // in. If the user is actually logged in (with any account) the
+                // cart will be immeidately reassociated with this account. We
+                // also put the old_quote_customer_id in the query params to create a
+                // trail we can use for debugging in the future if need be (by
+                // querying pageviews).
+                $params['old_quote_customer_id'] = $quote->getCustomerId();
+                $quote->setCustomerId(null);
+                $quote->save();
+                $this->cart->setQuote($quote);
                 $this->cart->save();
 
                 if (!empty($existingCartId) && $existingCartId !== $quoteId) {
