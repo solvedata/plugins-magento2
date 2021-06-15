@@ -7,6 +7,7 @@ namespace SolveData\Events\Controller\Cart;
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
+use SolveData\Events\Helper\AbandonedCartMerger;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
 {
@@ -16,6 +17,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
     private $customerSession;
     private $config;
     private $logger;
+    private $quoteMerger;
 
     /**
      * @param \Magento\Framework\App\Action\Context $context
@@ -30,6 +32,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
         \Magento\Customer\Model\Session $customerSession,
+        AbandonedCartMerger $quoteMerger,
         Config $config,
         Logger $logger
     ) {
@@ -39,6 +42,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         $this->customerSession = $customerSession;
         $this->config = $config;
         $this->logger = $logger;
+        $this->quoteMerger = $quoteMerger;
 
         parent::__construct($context);
     }
@@ -73,41 +77,57 @@ class Reclaim extends \Magento\Framework\App\Action\Action
 
                 $quote = $this->quoteRepository->get($quoteId);
 
-                // Allow the cart to be accessed even if the user is not logged
-                // in. If the user is actually logged in (with any account) the
-                // cart will be immeidately reassociated with this account.
-                //
-                // We also put the qcuid (quote customer id) and scuid (session
-                // customer id) in the query params to create a trail we can
-                // use for debugging in the future if need be (by querying
-                // pageviews).
-                $params['qcuid'] = $quote->getCustomerId();
-                $params['scuid'] = $this->customerSession->getCustomerId();
+                // Set the "quote's customer ID" and the "session's customer ID" as `qc` & `sc` respectively.
+                $params['qc'] = $quote->getCustomerId();
+                $params['sc'] = $this->customerSession->getCustomerId();
 
-                if ($this->config->isCartDisassociationEnabled()) {
-                    if (empty($quote->getCustomerId())) {
-                        // Disassociate quote customer
-                        $params['dqcu'] = false;
-                    } else {
-                        $params['dqcu'] = true;
-                        $quote->setCustomerId(null);
-                        $quote->save();
-                    }
-                } else {
-                    $params['dqcu'] = false;
-                }
-                $this->cart->setQuote($quote);
-                $this->cart->save();
+                // Set the "existing cart ID" and the "reclaimed cart ID" as `eq` & `rq` respectively.
+                $params['eq'] = $existingCartId;
+                $params['rq'] = $quoteId;
 
-                if (!empty($existingCartId) && $existingCartId !== $quoteId) {
-                    // `slv_ecid` is short for "Solve existing cart ID"
-                    // This is a diagnostic query parameter so we understand that the previous "existing" cart has been replaced.
-                    $params['slv_ecid'] = $existingCartId;
+                if (
+                    !empty($this->customerSession->getCustomerId())
+                    && $quoteId === $existingCartId
+                ) {
+                    // Add a diagnostic query parameter to record that we have "no-op" as the customer's
+                    //      existing cart is the cart to reclaim.
+                    $params['np'] = 1;
+
+                    return $this->checkoutRedirection($params);
                 }
 
-                $redirect = $this->resultRedirectFactory->create();
-                $redirect->setPath('checkout/cart', ['_query' => $params]);
-                return $redirect;
+                // If the customer is currently logged in and their
+                //   customer ID doesn't match the customer ID on the quote
+                //   then merge the reclaimed quote into their existing quote. 
+                if (
+                    !empty($this->customerSession->getCustomerId())
+                    && $quote->getCustomerId() !== $this->customerSession->getCustomerId()
+                ) {
+                    $existingQuote = $this->cart->getQuote();
+                    $this->quoteMerger->merge($existingQuote, $quote);
+                    $existingQuote->save();
+
+                    // Add a diagnostic query parameter to record that we have merged quotes
+                    $params['qm'] = 1;
+
+                    $this->saveCustomerQuote($existingQuote);
+                    return $this->checkoutRedirection($params);
+                }
+                
+                if (
+                    !empty($quote->getCustomerId())
+                    && !empty($this->customerSession->getCustomerId())
+                    && $this->config->isCartDisassociationEnabled()
+                ) {
+                    $quote->setCustomerId(null);
+                    $quote->save();
+
+                    // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
+                    $params['dq'] = 1;
+                }
+
+                $this->saveCustomerQuote($quote);
+                return $this->checkoutRedirection($params);
             } catch (\Throwable $t) {
                 $this->logger->error('Failed to reclaim cart: unhandled exception while trying to save cart.', [
                     'exception' => $t,
@@ -122,8 +142,8 @@ class Reclaim extends \Magento\Framework\App\Action\Action
             ]);
         }
 
-        // Add `slv_ac_err=1` to the existing query parameters and redirect to the home page
-        $params['slv_ac_err'] = '1';
+        // Add `ac_err=1` to the existing query parameters and redirect to the home page
+        $params['ac_err'] = '1';
 
         $redirect = $this->resultRedirectFactory->create();
         $redirect->setPath('', ['_query' => $params]);
@@ -131,7 +151,24 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         return $redirect;
     }
 
-    private function getExistingCartId(): ?string {
+    private function saveCustomerQuote($quote)
+    {
+        $this->cart->setQuote($quote);
+        $this->cart->save();
+
+        $checkoutSession = $this->cart->getCheckoutSession();
+        $checkoutSession->setQuoteId($quote->getId());
+    }
+
+    private function checkoutRedirection($params)
+    {
+        $redirect = $this->resultRedirectFactory->create();
+        $redirect->setPath('checkout/cart', ['_query' => $params]);
+        return $redirect;
+    }
+
+    private function getExistingCartId(): ?string
+    {
         try {
             $checkoutSession = $this->cart->getCheckoutSession();
             return $checkoutSession->getQuote()->getId();
@@ -139,7 +176,6 @@ class Reclaim extends \Magento\Framework\App\Action\Action
             $this->logger->warning('Failed to get existing cart id before reclaiming a cart.', [
                 'exception' => $t
             ]);
-
             return null;
         }
     }
