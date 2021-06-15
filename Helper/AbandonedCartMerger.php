@@ -9,7 +9,8 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item\Processor as ItemProcessor;
 
 /**
- * Solve's customisation of Magento\Quote\Model\Quote's quote merging.
+ * Solve's customisation of Magento\Quote\Model\Quote's quote merging that unions carts to
+ *  avoid duplicating items when a cart is reclaimed.
  * 
  * See https://github.com/magento/magento2/blob/2.3.5/app/code/Magento/Quote/Model/Quote.php#L2381
  */
@@ -45,8 +46,10 @@ class AbandonedCartMerger
             $found = false;
             foreach ($dest->getAllItems() as $quoteItem) {
                 if ($quoteItem->compare($item)) {
-                    // Customisation: takes the maximum of the two cart's quantities instead of their sum.
+                    // Customisation: Set the merge quantity to be the maximum of the two cart's quantities instead of their sum.
+                    // This effectively unions the two carts. 
                     $mergedQty = max($quoteItem->getQty(), $item->getQty());
+                    // End of Customisation
 
                     $quoteItem->setQty($mergedQty);
                     $this->itemProcessor->merge($item, $quoteItem);
