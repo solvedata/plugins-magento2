@@ -17,6 +17,7 @@ use SolveData\Events\Helper\Customer as CustomerHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Event\RegisterHandler\Converter;
 use SolveData\Events\Model\Event\Transport;
+use SolveData\Events\Model\Event\WebhookForwarder\WebhookForwarder;
 use SolveData\Events\Model\ResourceModel\Event as ResourceModel;
 
 class Event extends AbstractModel
@@ -72,6 +73,8 @@ class Event extends AbstractModel
      */
     protected $transport;
 
+    protected $webhookForwarder;
+
     /**
      * @param Config $config
      * @param Context $context
@@ -96,6 +99,7 @@ class Event extends AbstractModel
         OrderExtensionFactory $orderExtensionFactory,
         Registry $registry,
         Transport $transport,
+        WebhookForwarder $webhookForwarder,
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = []
@@ -107,6 +111,7 @@ class Event extends AbstractModel
         $this->logger = $logger;
         $this->orderExtensionFactory = $orderExtensionFactory;
         $this->transport = $transport;
+        $this->webhookForwarder = $webhookForwarder;
 
         parent::__construct(
             $context,
@@ -283,7 +288,14 @@ class Event extends AbstractModel
                 $this->logger->debug('Starting processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
 
                 $this->lockEventsToProcessing($eventIds);
+
+                $webhookResult = $this->webhookForwarder->process($events);
                 $requestResults = $this->transport->send($events);
+
+                // Append the webhook forwarder's result onto the end of each event's results before saving.
+                foreach ($requestResults as &$result) {
+                    $result[] = $webhookResult;
+                }
                 $this->updateEvents($events, $requestResults);
 
                 $this->logger->debug('Finished processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
@@ -295,8 +307,11 @@ class Event extends AbstractModel
                 $requestResults = array_fill_keys($eventIds, $errorResult);
                 $this->updateEvents($events, $requestResults);
 
-                $this->logger->debug('Error processing event', ['event_entity_ids' => $eventIds, 'cron_id' => $cronId]);
-                $this->logger->critical($t);
+                $this->logger->critical('Error processing event', [
+                    'exception' => $t,
+                    'event_entity_ids' => $eventIds,
+                    'cron_id' => $cronId
+                ]);
             }
 
             $eventsToProcess = array_slice($eventsToProcess, $transactionBatchSize);

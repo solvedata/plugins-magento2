@@ -3,6 +3,7 @@
 use PHPUnit\Framework\TestCase;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesOrderSaveAfter\CreateOrUpdateReturn;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
+use SolveData\Events\Model\Logger;
 
 class CreateOrUpdateReturnTest extends TestCase
 {
@@ -16,9 +17,10 @@ class CreateOrUpdateReturnTest extends TestCase
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -35,9 +37,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -56,9 +59,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertFalse($mutation->isAllowed());
     }
@@ -77,9 +81,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $this->assertTrue($mutation->isAllowed());
     }
@@ -103,9 +108,10 @@ PAYLOAD;
 PAYLOAD;
 
         $mutation = new CreateOrUpdateReturn(
-            $this->createPayloadConverter()
+            $this->createPayloadConverter(),
+            $this->createLogger()
         );
-        $mutation->setEvent(['payload' => $payload]);
+        $mutation->setEvent(['created_at' => '2021-06-01 01:23:00', 'payload' => $payload]);
 
         $variables = $mutation->getVariables();
 
@@ -128,6 +134,10 @@ PAYLOAD;
 
     private function createPayloadConverter(): PayloadConverter
     {
+        $config = $this->getMockBuilder('SolveData\Events\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $countryFactory = $this->getMockBuilder('Magento\Directory\Model\CountryFactory')
             ->disableOriginalConstructor()
             ->getMock();
@@ -148,11 +158,10 @@ PAYLOAD;
             ->disableOriginalConstructor()
             ->getMock();
         
-        $logger = $this->getMockBuilder('SolveData\Events\Model\Logger')
-            ->disableOriginalConstructor()
-            ->getMock();
-        
+        $logger = $this->createLogger();
+
         return new PayloadConverter(
+            $config,
             $countryFactory,
             $profileHelper,
             $regionFactory,
@@ -160,5 +169,11 @@ PAYLOAD;
             $quoteIdMaskFactory,
             $logger
         );
+    }
+
+    private function createLogger(): Logger {
+        return $this->getMockBuilder('SolveData\Events\Model\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

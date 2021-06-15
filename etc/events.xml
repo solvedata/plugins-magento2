@@ -44,4 +44,12 @@
         <observer name="order_cancel_after_data"
                   instance="SolveData\Events\Observer\Sales\OrderCancelAfterObserver" />
     </event>
+    <event name="sales_quote_merge_after">
+        <observer name="sales_quote_merge_after"
+                  instance="SolveData\Events\Observer\Sales\QuoteMergeAfterObserver" />
+    </event>
+    <event name="controller_action_predispatch_checkout_index_index">
+        <observer name="controller_action_predispatch_checkout_index_index"
+                  instance="SolveData\Events\Observer\Controller\StartCheckoutObserver" />
+    </event>
 </config>

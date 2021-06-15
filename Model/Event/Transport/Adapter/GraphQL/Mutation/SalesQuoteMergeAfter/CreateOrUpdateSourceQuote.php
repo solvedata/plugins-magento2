@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation;
+namespace SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\SalesQuoteMergeAfter;
 
-class CheckoutCartSaveAfter extends MutationAbstract
+use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
+
+class CreateOrUpdateSourceQuote extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
 mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOptions!) {
@@ -13,6 +15,18 @@ mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOpti
     }
 }
 GRAPHQL;
+
+    /**
+     * Mutation is allowed
+     *
+     * @return bool
+     */
+    public function isAllowed(): bool
+    {
+        $event = $this->getEvent();
+        $payload = $event['payload'];
+        return !empty($payload['source']['entity_id']);
+    }
 
     /**
      * Get variables for GraphQL request
@@ -27,9 +41,10 @@ GRAPHQL;
         $payload = $event['payload'];
 
         $input = $this->payloadConverter->convertCartData(
-            $payload['quote'],
-            $payload['quoteAllVisibleItems'],
-            $payload['area']
+            $payload['source'],
+            $payload['sourceQuoteAllVisibleItems'],
+            $payload['area'],
+            ['merged_into' => $payload['quote']]
         );
 
         // Use the timestamp of when the event was enqueued as the event's "occurred at" time.

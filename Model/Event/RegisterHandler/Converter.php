@@ -46,6 +46,7 @@ class Converter
         foreach ($data as $key => $item) {
             if (is_scalar($item)) {
                 $result[$key] = $item;
+                continue;
             }
             if (is_array($item)) {
                 $result[$key] = (new DataObject($item))->debug();
