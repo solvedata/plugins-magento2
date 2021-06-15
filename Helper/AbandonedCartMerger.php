@@ -8,6 +8,11 @@ use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item\Processor as ItemProcessor;
 
+/**
+ * Solve's customisation of Magento\Quote\Model\Quote's quote merging.
+ * 
+ * See https://github.com/magento/magento2/blob/2.3.5/app/code/Magento/Quote/Model/Quote.php#L2381
+ */
 class AbandonedCartMerger
 {
     private $eventManager;
