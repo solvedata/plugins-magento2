@@ -21,8 +21,9 @@ class OrderShipmentSave extends EventAbstract
     {
         parent::beforeProcess($observer);
 
-        /** @var Order $order */
-        $order = $observer->getEvent()->getOrder();
+        /** @var Shipment $shipment */
+        $shipment = $observer->getEvent()->getShipment();
+        $order = $shipment->getOrder();
         try {
             if (empty($order->getState())) {
                 // Throw an exception in order to generate a backtrace on the warning
