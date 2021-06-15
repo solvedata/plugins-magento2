@@ -329,6 +329,10 @@ class PayloadConverter
             $attributes['magento_customer_email'] = $quote['customer_email'];
         }
 
+        if (!empty($quote['customer_id'])) {
+            $attributes['magento_customer_id'] = $quote['customer_id'];
+        }
+
         if (!empty($quote['reserved_order_id'])) {
             $attributes['magento_reserved_order_id'] = $quote['reserved_order_id'];
         }
@@ -486,12 +490,15 @@ class PayloadConverter
      */
     public function convertProfileData(array $customer, array $area): array
     {
+        $attributes = $this->prepareAttributesData($area);
+        $attributes['magento_customer_id'] = $customer['entity_id'] ?? null;
+
         $data = [
             'email'      => $customer[CustomerInterface::EMAIL],
             'firstName'  => $customer[CustomerInterface::FIRSTNAME],
             'lastName'   => $customer[CustomerInterface::LASTNAME],
             'fullName'   => $customer[CustomerInterface::FIRSTNAME] . ' ' . $customer[CustomerInterface::LASTNAME],
-            'attributes' => json_encode($this->prepareAttributesData($area)),
+            'attributes' => json_encode($attributes),
         ];
 
         if (!empty($customer[CustomerInterface::CREATED_AT])) {

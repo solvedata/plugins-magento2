@@ -308,6 +308,10 @@ PAYLOAD;
 
     private function createPayloadConverter(): PayloadConverter
     {
+        $config = $this->getMockBuilder('SolveData\Events\Model\Config')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $countryFactory = $this->getMockBuilder('Magento\Directory\Model\CountryFactory')
             ->disableOriginalConstructor()
             ->getMock();
@@ -331,6 +335,7 @@ PAYLOAD;
         $logger = $this->createLogger();
 
         return new PayloadConverter(
+            $config,
             $countryFactory,
             $profileHelper,
             $regionFactory,
