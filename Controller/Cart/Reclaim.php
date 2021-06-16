@@ -24,6 +24,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
      * @param \Magento\Checkout\Model\Cart $cart
      * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
      * @param \Magento\Customer\Model\Session $customerSession
+     * @param AbandonedCartMerger $quoteMerger
      * @param Config $config
      * @param Logger $logger
      */
@@ -40,9 +41,9 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         $this->cart = $cart;
         $this->quoteRepository = $quoteRepository;
         $this->customerSession = $customerSession;
+        $this->quoteMerger = $quoteMerger;
         $this->config = $config;
         $this->logger = $logger;
-        $this->quoteMerger = $quoteMerger;
 
         parent::__construct($context);
     }
@@ -92,7 +93,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                     $params['np'] = 1;
                     return $this->checkoutRedirection($params);
                 }
-                
+
                 $loggedIn = !empty($this->customerSession->getCustomerId());
                 if ($loggedIn) {
                     // If the customer is currently logged in merge the reclaimed quote into their existing quote.
@@ -109,7 +110,22 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                     if (!empty($quote->getCustomerId()) && $this->config->isCartDisassociationEnabled()) {
                         // The current user is logged out but the quote belongs to a customer.
                         // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
+                        // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
                         $quote->setCustomerId(null);
+                        // Remove addresses in case an address belongs to the
+                        // customer originally owning this quote. The current
+                        // user will not have access to those addresses.
+                        $quote->removeAllAddresses();
+                        // Init shipping and billing address. This is what is
+                        // done here
+                        // https://github.com/magento/magento2/blob/2.3/app/code/Magento/Quote/Model/Quote.php#L2412
+                        // This if statement is always false but if i remove it
+                        // we get an error `The shipping address is missing.
+                        // Set the address and try again`
+                        if (!$quote->getId()) {
+                            $quote->getShippingAddress();
+                            $quote->getBillingAddress();
+                        }
                         $quote->save();
 
                         // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
