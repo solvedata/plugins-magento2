@@ -112,6 +112,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                         // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
                         // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
                         $quote->setCustomerId(null);
+                        $countryId = $quote->getShippingAddress()->getCountryId();
                         // Remove addresses in case an address belongs to the
                         // customer originally owning this quote. The current
                         // user will not have access to those addresses.
@@ -119,13 +120,13 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                         // Init shipping and billing address. This is what is
                         // done here
                         // https://github.com/magento/magento2/blob/2.3/app/code/Magento/Quote/Model/Quote.php#L2412
-                        // This if statement is always false but if i remove it
-                        // we get an error `The shipping address is missing.
-                        // Set the address and try again`
-                        if (!$quote->getId()) {
-                            $quote->getShippingAddress();
-                            $quote->getBillingAddress();
-                        }
+                        // but we also setCountryId because otherwise we get an
+                        // error here
+                        // app/code/Magento/Quote/Model/ShippingMethodManagement.php:213
+                        // "The shipping method can't be set for an empty cart.
+                        // Add an item to cart and try again."
+                        $quote->getShippingAddress()->setCountryId($countryId);
+                        $quote->getBillingAddress()->setCountryId($countryId);
                         $quote->save();
 
                         // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
