@@ -119,6 +119,9 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                         // Init shipping and billing address. This is what is
                         // done here
                         // https://github.com/magento/magento2/blob/2.3/app/code/Magento/Quote/Model/Quote.php#L2412
+                        // This if statement is always false but if i remove it
+                        // we get an error `The shipping address is missing.
+                        // Set the address and try again`
                         if (!$quote->getId()) {
                             $quote->getShippingAddress();
                             $quote->getBillingAddress();
