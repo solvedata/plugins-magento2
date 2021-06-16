@@ -7,7 +7,7 @@ namespace SolveData\Events\Controller\Cart;
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
-use SolveData\Events\Helper\AbandonedCartMerger;
+use SolveData\Events\Helper\QuoteMerger;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
 {
@@ -24,7 +24,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
      * @param \Magento\Checkout\Model\Cart $cart
      * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
      * @param \Magento\Customer\Model\Session $customerSession
-     * @param AbandonedCartMerger $quoteMerger
+     * @param QuoteMerger $quoteMerger
      * @param Config $config
      * @param Logger $logger
      */
@@ -33,7 +33,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
         \Magento\Customer\Model\Session $customerSession,
-        AbandonedCartMerger $quoteMerger,
+        QuoteMerger $quoteMerger,
         Config $config,
         Logger $logger
     ) {
@@ -97,9 +97,6 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                 // If the customer is currently logged in merge the reclaimed quote into their existing quote.
                 $existingQuote = $this->cart->getQuote();
                 $this->quoteMerger->merge($existingQuote, $quote);
-                $extensionAttributes = $existingQuote->getExtensionAttributes();
-                $extensionAttributes->setReclaimedFrom($quoteId);
-                $existingQuote->save();
 
                 // Add a diagnostic query parameter to record that we have merged quotes
                 $params['mq'] = 1;

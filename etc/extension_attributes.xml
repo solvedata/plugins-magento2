@@ -7,7 +7,4 @@
     <extension_attributes for="Magento\Customer\Api\Data\CustomerInterface">
         <attribute code="gender" type="string" />
     </extension_attributes>
-    <extension_attributes for="Magento\Quote\Api\Data\CartInterface">
-        <attribute code="reclaimed_from" type="string" />
-    </extension_attributes>
 </config>

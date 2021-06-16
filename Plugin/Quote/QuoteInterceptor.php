@@ -2,13 +2,18 @@
 
 namespace SolveData\Events\Plugin\Quote;
 
+use SolveData\Events\Helper\QuoteMerger;
 use Magento\Quote\Model\Quote;
 
 class QuoteInterceptor
 {
-    public function __construct(\SolveData\Events\Model\Logger $logger)
+    private $logger;
+    private $quoteMerger;
+
+    public function __construct(\SolveData\Events\Model\Logger $logger, QuoteMerger $quoteMerger)
     {
         $this->logger = $logger;
+        $this->quoteMerger = $quoteMerger;
     }
 
     /**
@@ -30,23 +35,14 @@ class QuoteInterceptor
         return $proceed();
     }
 
-    public function beforeMerge(Quote $dest, Quote $source)
+    // Don't call $ignored_proceed because we override the merge behaviour
+    // defined in the merge function
+    // app/code/Magento/Quote/Model/Quote.php:2405 (and also any other
+    // interceptors that would be called after us)
+    // TODO more comments as to why
+    public function aroundMerge(Quote $dest, callable $ignored_proceed, Quote $source)
     {
-        $this->logger->debug('QuoteInterceptor->beforeMerge', [
-            'dest' => $dest,
-            'source' => $source,
-            'destId' => $dest->getId(),
-            'reclaimedFrom' => $source->getExtensionAttributes()->getReclaimedFrom()
-        ]);
-        
-        if (
-            $dest->getId()
-            && $source->getExtensionAttributes()->getReclaimedFrom() === $dest->getId()
-        ) {
-            $dest->removeAllItems();
-        }
-
-        // Do not modify the arguments to the acutal call to Quote->merge()
-        return null;
+        $this->quoteMerger->merge($dest, $source);
+        return $dest;
     }
 }
