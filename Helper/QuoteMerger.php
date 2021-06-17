@@ -9,9 +9,12 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item\Processor as ItemProcessor;
 
 /**
- * Solve's customisation of Magento\Quote\Model\Quote's quote merging that unions carts to
- *  avoid duplicating items when a cart is reclaimed.
- * 
+ * Solve's customisation of Magento\Quote\Model\Quote's quote merging that uses
+ * the $source cart's quantity for a given item rather than summing $source and
+ * $dest item quantities to avoid duplicating items when a cart is reclaimed.
+ * If the item is in the $source but not $dest, then the item will be copied to
+ * $dest. If the item is in $dest but not $source, then it is untouched.
+ *
  * See https://github.com/magento/magento2/blob/2.3.5/app/code/Magento/Quote/Model/Quote.php#L2381
  */
 class QuoteMerger

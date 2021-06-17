@@ -94,8 +94,13 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                     return $this->checkoutRedirection($params);
                 }
 
-                // If the customer is currently logged in merge the reclaimed quote into their existing quote.
+                // Merge the reclaimed quote into their existing quote. Note
+                // this getter creates the quote if it doesn't exist.
                 $existingQuote = $this->cart->getQuote();
+                // We take the items from the source $quote and merge them into
+                // the destination $existingQuote. If an item exists in both
+                // the $quote and $existingQuote, we use the quantity from
+                // $quote. This avoids doubling up items already in the cart.
                 $this->quoteMerger->merge($existingQuote, $quote);
 
                 // Add a diagnostic query parameter to record that we have merged quotes
