@@ -71,8 +71,12 @@ class QuoteInterceptor
     {
         $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
         // Is a user logging in, triggering an anonymous cart to merge into a
-        // customer-linked cart. See `aroundMerge` for more information
+        // customer-linked cart. We don't want to override the merge behavior
+        // breaking unexpected places in the code. Limit the overriding to just
+        // the scenario we want to change (and can test). See `aroundMerge` for
+        // more information
         $isRelevantMerge = false;
+
         foreach ($stack as $call) {
             // Should match on roughly the 4th call in the stack trace
             if ($call['function'] == 'loadCustomerQuote' &&
