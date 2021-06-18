@@ -35,7 +35,7 @@ class QuoteInterceptor
         return $proceed();
     }
 
-    // Don't call $ignored_proceed because we override the merge behaviour
+    // Don't call $proceed if we override the merge behaviour
     // defined in the merge function
     // app/code/Magento/Quote/Model/Quote.php:2405 (and also any other
     // interceptors that would be called after us)
@@ -57,9 +57,28 @@ class QuoteInterceptor
     // anonymous cart to the customer-linked cart, and where the items already
     // exist in teh customer-linked cart, use the quantities from the anonymous
     // cart, because those are most up to date.
-    public function aroundMerge(Quote $dest, callable $ignored_proceed, Quote $source)
+    public function aroundMerge(Quote $dest, callable $proceed, Quote $source)
     {
-        $this->quoteMerger->merge($dest, $source);
-        return $dest;
+        if ($this->shouldUseCustomMerge()) {
+            $this->logger->debug('Overriding quote->merge behavior');
+            return $this->quoteMerger->merge($dest, $source);
+        } else {
+            return $proceed($source);
+        }
+    }
+
+    private function shouldUseCustomMerge(): bool
+    {
+        $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
+        // Is a user logging in, triggering an anonymous cart to merge into a
+        // customer-linked cart. See `aroundMerge` for more information
+        $isRelevantMerge = false;
+        foreach ($stack as $call) {
+            // Should match on roughly the 4th call in the stack trace
+            if ($call['function'] == 'loadCustomerQuote' &&
+                $call['class'] == 'Magento\\Checkout\\Model\\Session')
+                $isRelevantMerge = true;
+        }
+        return $isRelevantMerge;
     }
 }
