@@ -55,7 +55,7 @@ class QuoteInterceptor
     // carts. However this means that the user will end up with [2X, 4Y] rather
     // than [1X, 2Y]. The customised QuoteMerger copies the items from the
     // anonymous cart to the customer-linked cart, and where the items already
-    // exist in teh customer-linked cart, use the quantities from the anonymous
+    // exist in the customer-linked cart, use the quantities from the anonymous
     // cart, because those are most up to date.
     public function aroundMerge(Quote $dest, callable $proceed, Quote $source)
     {

@@ -55,7 +55,7 @@ class QuoteMerger
                     // that quantity. User would not want to buy double the
                     // number of the items (source quantity + destination
                     // quantity) nor would they want the source quantity to be
-                    // overridem by the destination quantity if source quantity
+                    // overridden by the destination quantity if source quantity
                     // was set more recently.
                     $mergedQty = $item->getQty();
                     // End of Customisation
