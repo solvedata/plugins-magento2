@@ -9,12 +9,15 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item\Processor as ItemProcessor;
 
 /**
- * Solve's customisation of Magento\Quote\Model\Quote's quote merging that unions carts to
- *  avoid duplicating items when a cart is reclaimed.
- * 
+ * Solve's customisation of Magento\Quote\Model\Quote's quote merging that uses
+ * the $source cart's quantity for a given item rather than summing $source and
+ * $dest item quantities to avoid duplicating items when a cart is reclaimed.
+ * If the item is in the $source but not $dest, then the item will be copied to
+ * $dest. If the item is in $dest but not $source, then it is untouched.
+ *
  * See https://github.com/magento/magento2/blob/2.3.5/app/code/Magento/Quote/Model/Quote.php#L2381
  */
-class AbandonedCartMerger
+class QuoteMerger
 {
     private $eventManager;
     private $itemProcessor;
@@ -46,9 +49,15 @@ class AbandonedCartMerger
             $found = false;
             foreach ($dest->getAllItems() as $quoteItem) {
                 if ($quoteItem->compare($item)) {
-                    // Customisation: Set the merge quantity to be the maximum of the two cart's quantities instead of their sum.
-                    // This effectively unions the two carts. 
-                    $mergedQty = max($quoteItem->getQty(), $item->getQty());
+                    // Customisation: Set the merge quantity to be $source
+                    // cart's quantity. We assume that the $source cart is the
+                    // one that's the most recently updated so we should use
+                    // that quantity. User would not want to buy double the
+                    // number of the items (source quantity + destination
+                    // quantity) nor would they want the source quantity to be
+                    // overridden by the destination quantity if source quantity
+                    // was set more recently.
+                    $mergedQty = $item->getQty();
                     // End of Customisation
 
                     $quoteItem->setQty($mergedQty);

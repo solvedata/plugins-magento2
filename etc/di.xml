@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Quote\Model\Quote">
-        <plugin name="quote_fix_get_customer_is_guest"
-                type="SolveData\Events\Plugin\Quote\FixGetCustomerIsGuest"/>
+        <plugin name="solve_quote_interceptor"
+                type="SolveData\Events\Plugin\Quote\QuoteInterceptor"/>
     </type>
     <type name="SolveData\Events\Model\Logger\Handler\Debug">
         <arguments>

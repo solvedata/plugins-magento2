@@ -7,7 +7,7 @@ namespace SolveData\Events\Controller\Cart;
 use SolveData\Events\Helper\ReclaimCartTokenHelper;
 use SolveData\Events\Model\Config;
 use SolveData\Events\Model\Logger;
-use SolveData\Events\Helper\AbandonedCartMerger;
+use SolveData\Events\Helper\QuoteMerger;
 
 class Reclaim extends \Magento\Framework\App\Action\Action
 {
@@ -24,7 +24,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
      * @param \Magento\Checkout\Model\Cart $cart
      * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
      * @param \Magento\Customer\Model\Session $customerSession
-     * @param AbandonedCartMerger $quoteMerger
+     * @param QuoteMerger $quoteMerger
      * @param Config $config
      * @param Logger $logger
      */
@@ -33,7 +33,7 @@ class Reclaim extends \Magento\Framework\App\Action\Action
         \Magento\Checkout\Model\Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
         \Magento\Customer\Model\Session $customerSession,
-        AbandonedCartMerger $quoteMerger,
+        QuoteMerger $quoteMerger,
         Config $config,
         Logger $logger
     ) {
@@ -94,50 +94,20 @@ class Reclaim extends \Magento\Framework\App\Action\Action
                     return $this->checkoutRedirection($params);
                 }
 
-                $loggedIn = !empty($this->customerSession->getCustomerId());
-                if ($loggedIn) {
-                    // If the customer is currently logged in merge the reclaimed quote into their existing quote.
-                    $existingQuote = $this->cart->getQuote();
-                    $this->quoteMerger->merge($existingQuote, $quote);
-                    $existingQuote->save();
+                // Merge the reclaimed quote into their existing quote. Note
+                // this getter creates the quote if it doesn't exist.
+                $existingQuote = $this->cart->getQuote();
+                // We take the items from the source $quote and merge them into
+                // the destination $existingQuote. If an item exists in both
+                // the $quote and $existingQuote, we use the quantity from
+                // $quote. This avoids doubling up items already in the cart.
+                $this->quoteMerger->merge($existingQuote, $quote);
 
-                    // Add a diagnostic query parameter to record that we have merged quotes
-                    $params['mq'] = 1;
+                // Add a diagnostic query parameter to record that we have merged quotes
+                $params['mq'] = 1;
 
-                    $this->saveQuoteForCustomer($existingQuote);
-                    return $this->checkoutRedirection($params);
-                } else {
-                    if (!empty($quote->getCustomerId()) && $this->config->isCartDisassociationEnabled()) {
-                        // The current user is logged out but the quote belongs to a customer.
-                        // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
-                        // We need to unset the quote's customer ID field in order for it to be valid in an anonymous session.
-                        $quote->setCustomerId(null);
-                        // Remove addresses in case an address belongs to the
-                        // customer originally owning this quote. The current
-                        // user will not have access to those addresses.
-                        $quote->removeAllAddresses();
-                        // Init shipping and billing address. This is what is
-                        // done here
-                        // https://github.com/magento/magento2/blob/2.3/app/code/Magento/Quote/Model/Quote.php#L2412
-                        // This if statement is always false but if i remove it
-                        // we get an error `The shipping address is missing.
-                        // Set the address and try again`
-                        if (!$quote->getId()) {
-                            $quote->getShippingAddress();
-                            $quote->getBillingAddress();
-                        }
-                        $quote->save();
-
-                        // Add a diagnostic query parameter to record that we have disassociated the quote from the customer
-                        $params['dq'] = 1;
-                    } else {
-                        // Add a diagnostic query parameter to record that we have reclaimed an anonymous quote.
-                        $params['el'] = 1;
-                    }
-
-                    $this->saveQuoteForCustomer($quote);
-                    return $this->checkoutRedirection($params);
-                }
+                $this->saveQuoteForCustomer($existingQuote);
+                return $this->checkoutRedirection($params);
             } catch (\Throwable $t) {
                 $this->logger->error('Failed to reclaim cart: unhandled exception while trying to save cart.', [
                     'exception' => $t,
