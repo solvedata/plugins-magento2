@@ -16,7 +16,7 @@ class Config
     const XML_PATH_ENABLED_EVENTS                   = 'solvedata_events/general/enabled_events';
     const XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS    = 'solvedata_events/general/enabled_anonymous_cart_events';
     const XML_PATH_ENABLED_CONVERT_HISTORICAL_CARTS = 'solvedata_events/general/enabled_convert_historical_carts';
-    const XML_PATH_ENABLED_CUSTOM_CART_MERGE        = 'solvedata_events/general/enabled_custom_merge';
+    const XML_PATH_ENABLED_CUSTOM_CART_MERGE        = 'solvedata_events/general/enabled_custom_cart_merge';
     const XML_PATH_DEBUG                            = 'solvedata_events/general/debug';
     const XML_PATH_CRON_BATCH_SIZE                  = 'solvedata_events/general/cron_batch_size';
     const XML_PATH_TRANSACTION_BATCH_SIZE           = 'solvedata_events/general/transaction_batch_size';
