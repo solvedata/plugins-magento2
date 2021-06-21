@@ -43,8 +43,8 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
-                <field id="enabled_cart_disassociation" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Should dissociate the cart from the customer when reclaiming an abandoned cart</label>
+                <field id="enabled_custom_cart_merge" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Config flag for whether the cart/quote merging behavior can be overridden to prevent duplicated cart items</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="enabled">1</field>

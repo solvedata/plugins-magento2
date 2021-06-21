@@ -16,7 +16,7 @@ class Config
     const XML_PATH_ENABLED_EVENTS                   = 'solvedata_events/general/enabled_events';
     const XML_PATH_ENABLED_ANONYMOUS_CART_EVENTS    = 'solvedata_events/general/enabled_anonymous_cart_events';
     const XML_PATH_ENABLED_CONVERT_HISTORICAL_CARTS = 'solvedata_events/general/enabled_convert_historical_carts';
-    const XML_PATH_ENABLED_CART_DISASSOCIATION      = 'solvedata_events/general/enabled_cart_disassociation';
+    const XML_PATH_ENABLED_CUSTOM_CART_MERGE        = 'solvedata_events/general/enabled_custom_cart_merge';
     const XML_PATH_DEBUG                            = 'solvedata_events/general/debug';
     const XML_PATH_CRON_BATCH_SIZE                  = 'solvedata_events/general/cron_batch_size';
     const XML_PATH_TRANSACTION_BATCH_SIZE           = 'solvedata_events/general/transaction_batch_size';
@@ -144,16 +144,18 @@ class Config
     }
 
     /**
-     * Config flag for whether the abandoned cart reclaiming should disassociate any previous Magento customers from the quote.
+     * Config flag for whether the cart/quote merging behavior can be
+     * overridden when needed to prevent duplicated cart items in
+     * Plugin/Quote/QuoteInterceptor.php
      *
      * @param integer|null $store
      *
      * @return bool
      */
-    public function isCartDisassociationEnabled($store = null): bool
+    public function isCustomCartMergeEnabled($store = null): bool
     {
         return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLED_CART_DISASSOCIATION,
+            self::XML_PATH_ENABLED_CUSTOM_CART_MERGE,
             ScopeInterface::SCOPE_STORE,
             $store
         );
