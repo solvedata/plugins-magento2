@@ -13,7 +13,7 @@
                 <transaction_batch_size>10</transaction_batch_size>
                 <sentry_dsn backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
                 <event_retention_period>30 days</event_retention_period>
-                <enabled_cart_disassociation>0</enabled_cart_disassociation>
+                <enabled_custom_cart_merge>0</enabled_custom_cart_merge>
             </general>
             <api>
                 <key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>

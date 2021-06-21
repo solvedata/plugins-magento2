@@ -3,17 +3,24 @@
 namespace SolveData\Events\Plugin\Quote;
 
 use SolveData\Events\Helper\QuoteMerger;
+use SolveData\Events\Model\Config;
 use Magento\Quote\Model\Quote;
 
 class QuoteInterceptor
 {
     private $logger;
     private $quoteMerger;
+    private $config;
 
-    public function __construct(\SolveData\Events\Model\Logger $logger, QuoteMerger $quoteMerger)
+    public function __construct(
+        \SolveData\Events\Model\Logger $logger,
+        QuoteMerger $quoteMerger,
+        Config $config
+    )
     {
         $this->logger = $logger;
         $this->quoteMerger = $quoteMerger;
+        $this->config = $config;
     }
 
     /**
@@ -63,26 +70,36 @@ class QuoteInterceptor
             $this->logger->debug('Overriding quote->merge behavior');
             return $this->quoteMerger->merge($dest, $source);
         } else {
+            $this->logger->debug('Not overriding quote->merge behavior');
             return $proceed($source);
         }
     }
 
+    /**
+     * Is a user logging in, triggering an anonymous cart to merge into a
+     * customer-linked cart. We don't want to override the merge behavior
+     * breaking unexpected places in the code. Limit the overriding to just
+     * the scenario we want to change (and can test). See `aroundMerge` for
+     * more information
+     */
     private function shouldUseCustomMerge(): bool
     {
-        $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
-        // Is a user logging in, triggering an anonymous cart to merge into a
-        // customer-linked cart. We don't want to override the merge behavior
-        // breaking unexpected places in the code. Limit the overriding to just
-        // the scenario we want to change (and can test). See `aroundMerge` for
-        // more information
-        $isRelevantMerge = false;
+        try {
+            if (!$this->config->isCustomCartMergeEnabled()) return false;
 
-        foreach ($stack as $call) {
-            // Should match on roughly the 4th call in the stack trace
-            if ($call['function'] == 'loadCustomerQuote' &&
-                $call['class'] == 'Magento\\Checkout\\Model\\Session')
-                $isRelevantMerge = true;
+            // Fetch 8 stack frames (3 more than needed) unless call stack in
+            // Magento varies between versions
+            $stack = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
+
+            foreach ($stack as $call) {
+                // Should match on roughly the 5th call in the stack trace
+                if ($call['function'] == 'loadCustomerQuote' &&
+                    $call['class'] == 'Magento\\Checkout\\Model\\Session')
+                    return true;
+            }
+            return false;
+        } catch (\Throwable $t) {
+            $this->logger->error('shouldUseCustomMerge check failed', $t);
         }
-        return $isRelevantMerge;
     }
 }
