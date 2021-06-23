@@ -699,6 +699,7 @@ class PayloadConverter
 
         if (!empty($order['gift_cards_amount'])) {
             $giftCardsAmount = $order['gift_cards_amount'];
+            // Note PHP does type coersion from string to float
             if (is_numeric($giftCardsAmount) && $giftCardsAmount > 0) {
                 $adjustments[] = [
                     'amount'      => sprintf('-%.4F', $giftCardsAmount),
@@ -739,6 +740,23 @@ class PayloadConverter
                     'description' => 'Discount tax compensation amount',
                 ];
             }
+        }
+
+        // Store Credit is an Adobe Commerce only feature (paid Magento)
+        // https://docs.magento.com/user-guide/sales/store-credit.html
+        try {
+            $storeCredit = $order['customer_balance_invoiced'];
+            // Note PHP does type coersion from string to float, if it is a string
+            // (We are being paranoid here about whether $storeCredit is a
+            // float or a string but it seems to be a float in real data)
+            if (!empty($storeCredit) && is_numeric($storeCredit) && $storeCredit > 0) {
+                $adjustments[] = [
+                    'amount'      => sprintf('-%.4F', $storeCredit),
+                    'description' => 'Store credit',
+                ];
+            }
+        } catch (\Throwable $t) {
+            $this->logger->error('Unexpected error while extracting Store Credit', $t);
         }
 
         return $adjustments;
