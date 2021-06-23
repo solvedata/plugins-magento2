@@ -235,9 +235,10 @@ class Event extends AbstractModel
                 $orderExtension = $this->orderExtensionFactory->create();
             }
             $orderExtension->setIsImportToSolveData(true);
-
-            // Load addresses if addresses is null
+            
+            // Hydrate the model's address & payment information before serializing.
             $order->getAddresses();
+            $order->getPayment();
 
             try {
                 $data = [

@@ -27,18 +27,26 @@ GRAPHQL;
     {
         $event = $this->getEvent();
         $payload = $event['payload'];
+        $order = $payload['order'];
 
         $input = $this->payloadConverter->convertOrderData(
-            $payload['order'],
+            $order,
             $payload['orderAllVisibleItems'],
             $payload['area']
         );
 
-        // Use the timestamp of when the event was enqueued as the event's "occurred at" time.
-        // Note that this the time when the event was created not when the order was created.
-        $occurredAt = $this->payloadConverter->getFormattedDatetime($event['created_at']);
+        $isRealtimeEvent = empty($order['extension_attributes']['is_import_to_solve_data']);
+        if ($isRealtimeEvent) {
+            // Use the timestamp of when the event was enqueued as the event's "occurred at" time.
+            // Note that this the time when the event was created not when the order was created.
+            $occurredAt = $event['created_at'];
+        } else {
+            // The order is being imported. Use the order's "created at" field to approximate the "occurred at" time.
+            $occurredAt = $order['created_at'];
+        }
+                
         $options = [
-            'occurred_at' => $occurredAt
+            'occurred_at' => $this->payloadConverter->getFormattedDatetime($occurredAt)
         ];
 
         return [
