@@ -756,7 +756,7 @@ class PayloadConverter
                 ];
             }
         } catch (\Throwable $t) {
-            $this->logger->error('Unexpected error while extracting Store Credit', $t);
+            $this->logger->error('Unexpected error while extracting Store Credit', ['exception' => $t]);
         }
 
         return $adjustments;
