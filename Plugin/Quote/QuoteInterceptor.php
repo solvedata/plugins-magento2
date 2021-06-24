@@ -99,7 +99,7 @@ class QuoteInterceptor
             }
             return false;
         } catch (\Throwable $t) {
-            $this->logger->error('shouldUseCustomMerge check failed', $t);
+            $this->logger->error('shouldUseCustomMerge check failed', ['exception' => $t]);
         }
     }
 }
