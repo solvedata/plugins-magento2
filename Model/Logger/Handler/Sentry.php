@@ -36,19 +36,23 @@ class Sentry extends AbstractHandler
      */
     public function handle(array $record): bool
     {
-        $hub = $this->sentryHubManager->getHub();
-        if (is_null($hub)) {
+        try {
+            $hub = $this->sentryHubManager->getHub();
+            if (is_null($hub)) {
+                return false;
+            }
+    
+            $level = $record['level'];
+            if ($level < Logger::WARNING) {
+                $this->logBreadcrumb($hub, $record);
+            } else {
+                $this->logError($hub, $record);
+            }
+    
+            return false;
+        } catch (\Throwable $t) {
             return false;
         }
-
-        $level = $record['level'];
-        if ($level < Logger::WARNING) {
-            $this->logBreadcrumb($hub, $record);
-        } else {
-            $this->logError($hub, $record);
-        }
-
-        return false;
     }
 
     private function logError(HubInterface $hub, array $record): void

@@ -6,13 +6,12 @@ namespace SolveData\Events\Model\Logger;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-use Sentry\Event;
-use Sentry\EventHint;
 use Sentry\Severity;
 use Sentry\State\HubInterface;
 use Sentry\State\Scope;
 
-// Adapted from https://github.com/getsentry/sentry-php/blob/master/src/Monolog/Handler.php
+
+// Adapted from https://github.com/getsentry/sentry-php/blob/3.0.0-beta1/src/Monolog/Handler.php
 final class SentryHandler extends AbstractProcessingHandler
 {
     /**
@@ -41,29 +40,28 @@ final class SentryHandler extends AbstractProcessingHandler
      */
     protected function write(array $record): void
     {
-        $event = Event::createEvent();
-        $event->setLevel(self::getSeverityFromLevel($record['level']));
-        $event->setMessage($record['message']);
-        $event->setLogger(sprintf('monolog.%s', $record['channel']));
-
-        $hint = new EventHint();
+        $payload = [
+            'level' => self::getSeverityFromLevel($record['level']),
+            'message' => $record['message'],
+            'logger' => 'monolog.' . $record['channel'],
+        ];
 
         if (isset($record['context']['exception']) && $record['context']['exception'] instanceof \Throwable) {
-            $hint->exception = $record['context']['exception'];
+            $payload['exception'] = $record['context']['exception'];
 
             // Deduplicate the exception by removing it from the record context
             unset($record['context']['exception']);
         }
 
-        if (isset($record['context'])) {
-            $event->setExtra($record['context']);
-        }
-
-        $this->hub->withScope(function (Scope $scope) use ($record, $event, $hint): void {
+        $this->hub->withScope(function (Scope $scope) use ($record, $payload): void {
             $scope->setExtra('monolog.channel', $record['channel']);
             $scope->setExtra('monolog.level', $record['level_name']);
 
-            $this->hub->captureEvent($event, $hint);
+            if (isset($record['context'])) {
+                $scope->setExtras($record['context']);
+            }
+
+            $this->hub->captureEvent($payload);
         });
     }
 
