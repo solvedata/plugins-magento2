@@ -2,6 +2,7 @@ name: ci
 on: [push, pull_request]
 jobs:
   ci:
+    runs-on: ubuntu-latest
     container: composer:2
     steps:
       - uses: actions/checkout@v2
