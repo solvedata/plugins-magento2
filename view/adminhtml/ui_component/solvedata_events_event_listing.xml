@@ -17,11 +17,6 @@
                 </settings>
             </action>
         </massaction>
-        <argument name="data" xsi:type="array">
-            <item name="config" xsi:type="array">
-                <item name="sticky" xsi:type="boolean">false</item>
-            </item>
-        </argument>
         <columnsControls name="columns_controls"/>
         <filterSearch name="fulltext"/>
         <filters name="listing_filters" />
