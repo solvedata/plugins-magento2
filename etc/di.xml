@@ -24,29 +24,6 @@
             </argument>
         </arguments>
     </type>
-    <virtualType name="SolveDataEventsReader" type="Magento\Framework\Config\Reader\Filesystem">
-        <arguments>
-            <argument name="converter" xsi:type="object">SolveData\Events\Model\Config\SolveDataEvents\Converter</argument>
-            <argument name="schemaLocator" xsi:type="object">SolveData\Events\Model\Config\SolveDataEvents\SchemaLocator</argument>
-            <argument name="fileName" xsi:type="string">solvedata_events.xml</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="SolveDataEventsDataConfig" type="Magento\Framework\Config\Data">
-        <arguments>
-            <argument name="reader" xsi:type="object">SolveDataEventsReader</argument>
-            <argument name="cacheId" xsi:type="string">solvedata_events_config_cache</argument>
-        </arguments>
-    </virtualType>
-    <type name="SolveData\Events\Model\Config\Source\Events">
-        <arguments>
-            <argument name="dataConfig" xsi:type="object">SolveDataEventsDataConfig</argument>
-        </arguments>
-    </type>
-    <type name="SolveData\Events\Model\Event\Transport\Adapter\GraphQL">
-        <arguments>
-            <argument name="dataConfig" xsi:type="object">SolveDataEventsDataConfig</argument>
-        </arguments>
-    </type>
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">

@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace SolveData\Events\Model\Config\Source;
 
-use Magento\Framework\Config\DataInterface;
 use Magento\Framework\Data\OptionSourceInterface;
+use SolveData\Events\Model\Config\EventMutationConfig;
 
 class Events implements OptionSourceInterface
 {
     /**
-     * @var DataInterface
+     * @var EventMutationConfig
      */
-    protected $dataConfig;
+    protected $eventMutationConfig;
 
     /**
-     * @param DataInterface $dataConfig
+     * @param EventMutationConfig $eventMutationConfig
      */
     public function __construct(
-        DataInterface $dataConfig
+        EventMutationConfig $eventMutationConfig
     ) {
-        $this->dataConfig = $dataConfig;
+        $this->eventMutationConfig = $eventMutationConfig;
     }
 
     /**
@@ -31,7 +31,7 @@ class Events implements OptionSourceInterface
     public function toOptionArray(): array
     {
         $result = [];
-        $events = array_keys($this->dataConfig->get('solvedata_events'));
+        $events = array_keys($this->eventConfigProvider->getMutations());
 
         foreach ($events as $event) {
             $result[] = [
