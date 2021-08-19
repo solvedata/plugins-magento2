@@ -31,7 +31,7 @@ class Events implements OptionSourceInterface
     public function toOptionArray(): array
     {
         $result = [];
-        $events = array_keys($this->eventConfigProvider->getMutations());
+        $events = array_keys($this->eventMutationConfig->getMutationsForEvents());
 
         foreach ($events as $event) {
             $result[] = [
