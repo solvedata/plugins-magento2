@@ -56,15 +56,6 @@ abstract class CurlAbstract extends CurlAdapter implements AdapterInterface
     abstract protected function request(array $event);
 
     /**
-     * Send mass request
-     *
-     * @param array $events
-     *
-     * @return int[]
-     */
-    abstract protected function massRequest(array $events): array;
-
-    /**
      * Curl_multi_* requests support
      *
      * @param array $urls
