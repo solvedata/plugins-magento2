@@ -127,6 +127,9 @@ class GraphQL extends CurlAbstract
                     continue;
                 }
                 $this->logger->debug('Sending GraphQL request', ['request' => $requestData]);
+                // All curl options can be found in _allowedParams in
+                // lib/internal/Magento/Framework/HTTP/Adapter/Curl.php
+                parent::setConfig(['timeout' => 15]);
                 $this->write(
                     \Zend_Http_Client::POST,
                     $requestData['url'],
