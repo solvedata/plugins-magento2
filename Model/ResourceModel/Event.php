@@ -76,10 +76,6 @@ class Event extends AbstractDb
             ])
             ->where('attempt < ?', $this->config->getMaxAttemptCount())
             ->where('scheduled_at < ?', new \Zend_Db_Expr('NOW()'))
-            ->order('status ' . Select::SQL_DESC)
-            ->order('scheduled_at ' . Select::SQL_ASC)
-            ->order('created_at ' . Select::SQL_ASC)
-            // Use the auto-incrementing ID as a tiebreaker since the datetime only use second-level precision
             ->order('id ' . Select::SQL_ASC)
             ->limit($this->config->getCronBatchSize());
 

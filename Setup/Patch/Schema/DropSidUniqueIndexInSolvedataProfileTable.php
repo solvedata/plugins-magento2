@@ -61,7 +61,7 @@ class DropSidUniqueIndexInSolvedataProfileTable implements SchemaPatchInterface
                 AdapterInterface::INDEX_TYPE_UNIQUE
             ),
             ['sid'],
-            ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
+            AdapterInterface::INDEX_TYPE_UNIQUE
         );
 
         $connection->endSetup();
