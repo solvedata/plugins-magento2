@@ -7,7 +7,7 @@ use Magento\Framework\Setup\Patch\SchemaPatchInterface;
 use SolveData\Events\Model\ResourceModel\Event as ResourceModel;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
-class AddCreatedAtIndexToSolvedataEvents implements SchemaPatchInterface
+class AddCreatedAtAndStatusIndexesToSolvedataEvents implements SchemaPatchInterface
 {
     /**
      * @var ModuleDataSetupInterface
@@ -30,27 +30,34 @@ class AddCreatedAtIndexToSolvedataEvents implements SchemaPatchInterface
     {
         $connection = $this->moduleDataSetup->getConnection();
         $connection->startSetup();
-        $tableName = $connection->getTableName(ResourceModel::TABLE_NAME);
 
-        if (!$this->indexAlreadyExists($connection->getIndexList($tableName))) {
-            $connection->addIndex(
-                $tableName,
-                $connection->getIndexName(
-                    ResourceModel::TABLE_NAME,
-                    ['created_at'],
-                    AdapterInterface::INDEX_TYPE_INDEX
-                ),
-                ['created_at'],
-                AdapterInterface::INDEX_TYPE_INDEX
-            );
-        }
+        $this->createIndexIfNotExists(['created_at'], $connection);
+        $this->createIndexIfNotExists(['status'], $connection);
 
         $connection->endSetup();
     }
 
-    private function indexAlreadyExists($indexes): bool {
+    private function createIndexIfNotExists($columns, $connection) {
+        $tableName = $connection->getTableName(ResourceModel::TABLE_NAME);
+        $indexes = $connection->getIndexList($tableName);
+
+        if (!$this->indexAlreadyExists($indexes, $columns)) {
+            $connection->addIndex(
+                $tableName,
+                $connection->getIndexName(
+                    ResourceModel::TABLE_NAME,
+                    $columns,
+                    AdapterInterface::INDEX_TYPE_INDEX
+                ),
+                $columns,
+                AdapterInterface::INDEX_TYPE_INDEX
+            );
+        }
+    }
+
+    private function indexAlreadyExists($indexes, $columns): bool {
         foreach ($indexes as $indexName => $indexData) {
-            if ($indexData['COLUMNS_LIST'] == ['created_at']) {
+            if ($indexData['COLUMNS_LIST'] == $columns) {
                 return true;
             }
         }
