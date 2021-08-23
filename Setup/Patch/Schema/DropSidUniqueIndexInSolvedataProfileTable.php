@@ -54,7 +54,6 @@ class DropSidUniqueIndexInSolvedataProfileTable implements SchemaPatchInterface
         $connection->startSetup();
         $tableName = $connection->getTableName(ResourceModel::TABLE_NAME);
 
-        // TODO tcan this even work
         $connection->addIndex(
             $connection->getIndexName(
                 ResourceModel::TABLE_NAME,
@@ -62,7 +61,7 @@ class DropSidUniqueIndexInSolvedataProfileTable implements SchemaPatchInterface
                 AdapterInterface::INDEX_TYPE_UNIQUE
             ),
             ['sid'],
-            ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
+            AdapterInterface::INDEX_TYPE_UNIQUE
         );
 
         $connection->endSetup();

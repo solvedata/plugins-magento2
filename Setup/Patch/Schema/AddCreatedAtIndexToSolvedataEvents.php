@@ -43,7 +43,6 @@ class AddCreatedAtIndexToSolvedataEvents implements SchemaPatchInterface
                 ['created_at'],
                 AdapterInterface::INDEX_TYPE_INDEX
             );
-            // TODO do the other migrations even work?
         }
 
         $connection->endSetup();
