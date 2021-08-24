@@ -5,12 +5,12 @@ declare (strict_types = 1);
 namespace SolveData\Events\Model\Event\Transport\Adapter;
 
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\Config\DataInterface;
 use Magento\Framework\Module\ModuleList;
 use Magento\Store\Model\StoreManagerInterface;
 use SolveData\Events\Api\Event\Transport\Adapter\GraphQL\MutationInterface;
 use SolveData\Events\Helper\Profile as ProfileHelper;
 use SolveData\Events\Model\Config;
+use SolveData\Events\Model\Config\EventMutationConfig;
 use SolveData\Events\Model\Logger;
 use SolveData\Events\Model\ResourceModel\Event as ResourceModel;
 
@@ -29,9 +29,9 @@ class GraphQL extends CurlAbstract
     protected $profileHelper;
 
     /**
-     * @var DataInterface $dataConfig
+     * @var EventMutationConfig
      */
-    protected $dataConfig;
+    protected $eventMutationConfig;
 
     /**
      * @var Logger $logger
@@ -51,7 +51,6 @@ class GraphQL extends CurlAbstract
     /**
      * @param Config $config
      * @param ProfileHelper $profileHelper
-     * @param DataInterface $dataConfig
      * @param Logger $logger
      * @param StoreManagerInterface $storeManager
      * @param ModuleList $moduleList
@@ -59,14 +58,14 @@ class GraphQL extends CurlAbstract
     public function __construct(
         Config $config,
         ProfileHelper $profileHelper,
-        DataInterface $dataConfig,
+        EventMutationConfig $eventMutationConfig,
         Logger $logger,
         StoreManagerInterface $storeManager,
         ModuleList $moduleList
     ) {
         $this->config = $config;
         $this->profileHelper = $profileHelper;
-        $this->dataConfig = $dataConfig;
+        $this->eventMutationConfig = $eventMutationConfig;
         $this->logger = $logger;
         $this->storeManager = $storeManager;
         $this->moduleList = $moduleList;
@@ -178,19 +177,11 @@ class GraphQL extends CurlAbstract
      */
     protected function getOrderedMutationsByEvent(array $event)
     {
-        $this->logger->debug('Getting ordered mutations for event', ['event_id' => $event[ResourceModel::ENTITY_ID]]);
-        $orderedMutations = [];
-        $mutations = $this->dataConfig->get(sprintf('solvedata_events/%s', $event['name']));
-        foreach ($mutations as $mutation) {
-            $orderedMutations[$mutation['order']][] = $mutation['class'];
-        }
-        ksort($orderedMutations);
-        if (!empty($orderedMutations[0])) {
-            array_push($orderedMutations, $orderedMutations[0]);
-            unset($orderedMutations[0]);
-        }
-
-        return call_user_func_array('array_merge', $orderedMutations);
+        $this->logger->debug('Getting ordered mutations for event', [
+            'event_id' => $event[ResourceModel::ENTITY_ID]
+        ]);
+        $event_name = $event['name'];
+        return $this->eventMutationConfig->getMutationsForEvents()[$event_name];
     }
 
     /**
