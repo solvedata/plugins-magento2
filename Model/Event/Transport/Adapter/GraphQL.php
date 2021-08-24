@@ -178,7 +178,7 @@ class GraphQL extends CurlAbstract
             'event_id' => $event[ResourceModel::ENTITY_ID]
         ]);
         $event_name = $event['name'];
-        return $this->eventMutationConfig->getMutations()[$event_name];
+        return $this->eventMutationConfig->getMutationsForEvents()[$event_name];
     }
 
     /**
