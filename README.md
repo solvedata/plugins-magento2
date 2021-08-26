@@ -1,4 +1,4 @@
-# plugins-magento2
+# Solve's Magento Extension
 
 ## Development environment
 
@@ -31,9 +31,6 @@ Run the following command Magento project directory (not the repository root) to
 ### Helpful links
 
 - http://solvedata.local - Main Site
-- http://solvedata.local:8080 - PhpMyAdmin
-- http://solvedata.local:8282 - PhpRedisAdmin
-- http://solvedata.local:5601 - Kibana
 
 ### Running unit tests
 
@@ -50,14 +47,15 @@ composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
 
 ## Handle a new Magento event
 1. Add a new event to `etc/events.xml` and describe which observer class will be processed.
-    ```
+See [Magento's documentation on events and observers](https://devdocs.magento.com/guides/v2.4/extension-dev-guide/events-and-observers.html).
+    ```xml
     <event name="customer_register_success">
         <observer name="prepare_customer_register_success_data"
                   instance="SolveData\Events\Observer\Customer\RegisterObserver" />
     </event>
     ```
-1. Create new register handler file in `Model/Event/RegisterHandler` folder and extend it from `SolveData\Events\Model\Event\RegisterHandler\EventAbstract` class.
-    ```
+1. Create new register handler class in the `Model/Event/RegisterHandler` directory and extending the `SolveData\Events\Model\Event\RegisterHandler\EventAbstract` base class.
+    ```php
     class RegisterSuccess extends EventAbstract
     {
         public function prepareData(Observer $observer): EventAbstract
@@ -73,7 +71,7 @@ composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
     }
     ```
 1. Create new observer file in `Observer` folder and extend it from `SolveData\Events\Observer\ObserverAbstract` class. Specify your class as handler.
-    ```
+    ```php
     class RegisterObserver extends ObserverAbstract
     {
         /**
@@ -92,15 +90,21 @@ composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
         }
     }
     ```
-1. Add new event to `etc/solvedata_events.xml` and describe what mutation classes will be processed.
-    ```
-    <event name="customer_register_success">
-        <mutation class="SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerRegisterSuccess"/>
-    </event>
+1. Add a new event to the `SolveData\Events\Model\ConfigEventMutationConfig` class and describe which mutation classes will be processed.
+    ```php
+    function getMutationsForEvents(): array
+    {
+        return [
+            // ... Other events here
+            'customer_register_success' => [
+                \SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerRegisterSuccess::class
+            ]
+        ];
+    }
     ```
 1. Create new mutation file in `Model/Event/Transport/Adapter/GraphQL/Mutation` folder and extend it from `SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract` class.
    Write mutation query in `const QUERY = ...` and prepare variables in `getVariables` function.
-    ```
+    ```php
     class CustomerRegisterSuccess extends MutationAbstract
     {
         const QUERY = <<<'GRAPHQL'
