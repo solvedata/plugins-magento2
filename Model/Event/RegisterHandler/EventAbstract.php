@@ -25,6 +25,7 @@ use SolveData\Events\Model\Config;
  * @method EventAbstract setAffectedEntityId(int $id)
  * @method string getAffectedIncrementId()
  * @method EventAbstract setAffectedIncrementId(string $incrementId)
+ * @method EventAbstract getPayload()
  * @method EventAbstract setPayload(string|array $value)
  */
 abstract class EventAbstract extends DataObject
@@ -153,28 +154,6 @@ abstract class EventAbstract extends DataObject
     }
 
     /**
-     * Get payload data
-     *
-     * @return string
-     */
-    protected function getPayload(): string
-    {
-        if ($this->hasData('prepared_payload')) {
-            return $this->getData('prepared_payload');
-        }
-        $payload = $this->getData('payload');
-        if (empty($payload)) {
-            return '';
-        }
-
-        $payload = is_array($payload) ? $payload : [$payload];
-        $payload = json_encode($this->converter->convert($payload));
-        $this->setData('prepared_payload', $payload);
-
-        return $payload;
-    }
-
-    /**
      * Prepared observer data and send to solve data events
      *
      * @return EventAbstract
@@ -184,10 +163,14 @@ abstract class EventAbstract extends DataObject
      */
     protected function registerEvent(): EventAbstract
     {
+        $payload = $this->getPayload();
+        $payload = is_array($payload) ? $payload : [$payload];
+        $serializedPayload = json_encode($this->converter->convert($payload));
+
         $data = [
             'name'                  => $this->getEventName(),
             'status'                => Event::STATUS_NEW,
-            'payload'               => $this->getPayload(),
+            'payload'               => $serializedPayload,
             'affected_entity_id'    => $this->getAffectedEntityId(),
             'affected_increment_id' => $this->getAffectedIncrementId(),
             'store_id'              => $this->eventHelper->getStore()->getId()
@@ -240,6 +223,10 @@ abstract class EventAbstract extends DataObject
             'Finish process event "%s"',
             $observer->getEvent()->getName()
         ));
+
+        // Ensure we unset all mutable data to ensure their is no
+        // conflict with subsequent events processed by the same EventAbstract instance.
+        $this->unsetData();
 
         return true;
     }
