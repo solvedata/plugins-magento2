@@ -5,25 +5,36 @@
 [![License](https://poser.pugx.org/solvedata/plugins-magento2/license)](https://github.com/solvedata/plugins-magento2/blob/main/LICENSE)
 [![PHP Version Require](https://poser.pugx.org/solvedata/plugins-magento2/require/php)](https://packagist.org/packages/solvedata/plugins-magento2)
 
-## Magento Compatibility
-
-Compatible and tested with Magento `v2.3`.
+![Integration Architecture](extension-architecture.svg)
 
 ## Getting Started
 
 Run the following commands to install the latest version (`v2.1.1`) on your Magento server.
 
 ```shell
-composer require solvedata/plugins-magento2==2.1.1
+$ composer require solvedata/plugins-magento2==2.1.1
 
-php bin/magento module:enable SolveData_Events
-php bin/magento setup:upgrade
-php bin/magento setup:static-content:deploy -f
+$ php bin/magento module:enable SolveData_Events
+$ php bin/magento setup:upgrade
+$ php bin/magento setup:static-content:deploy -f
 ```
 
 See [Solve's documentation](https://docs.solvedata.app/latest/integrations/magento) for more in-depth instructions.
 
+## Magento Compatibility
+
+Compatible and tested with Magento `v2.3`.
+
 ## Features
+
+- Embeds Solve's JS Client Side SDK into the Store's design layout
+- Synchronizes Magento data into Solve in real-time (in 1 minutes batches)
+    - Customers
+    - Carts
+    - Orders
+    - Payments
+    - Returns
+- Recover abandoned carts via the `/solve/reclaim` endpoint
 
 ## Importing historic data
 
@@ -33,7 +44,7 @@ See [Solve's documentation](https://docs.solvedata.app/latest/integrations/magen
 ```shell
 # Arguments `--from` and `--to` are optional
 
-php bin/magento solve:import:customers [--from [FROM-ID]] [--to [TO-ID]]
+$ php bin/magento solve:import:customers [--from [FROM-ID]] [--to [TO-ID]]
 ```
 
 ### Importing orders
@@ -42,7 +53,7 @@ php bin/magento solve:import:customers [--from [FROM-ID]] [--to [TO-ID]]
 ```shell
 # Arguments `--from` and `--to` are optional
 
-php bin/magento solve:import:orders [--from [FROM-ID]] [--to [TO-ID]]
+$ php bin/magento solve:import:orders [--from [FROM-ID]] [--to [TO-ID]]
 ```
 
 ## Getting help
