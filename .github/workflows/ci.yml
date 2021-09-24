@@ -9,3 +9,6 @@ jobs:
 
       - name: Validate composer.json
         run: composer validate
+
+      - name: Verify version references are consistent
+        run: ./verify_versions.sh

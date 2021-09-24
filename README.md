@@ -1,6 +1,35 @@
-# Solve's Magento Extension
+# Solve Magento 2 Integration
 
-## Development environment
+![Build Status](https://github.com/solvedata/plugins-magento2/workflows/ci/badge.svg)
+[![Latest Stable Version](https://poser.pugx.org/solvedata/plugins-magento2/v)](https://packagist.org/packages/solvedata/plugins-magento2)
+[![License](https://poser.pugx.org/solvedata/plugins-magento2/license)](https://github.com/solvedata/plugins-magento2/blob/main/LICENSE)
+[![PHP Version Require](https://poser.pugx.org/solvedata/plugins-magento2/require/php)](https://packagist.org/packages/solvedata/plugins-magento2)
+
+# Getting Started
+
+Run the following commands to install the latest version (`v2.1.1`) on your Magento server.
+
+```shell
+composer require solvedata/plugins-magento2==2.1.1
+
+php bin/magento module:enable SolveData_Events
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy -f
+```
+
+See [Solve's documentation](https://docs.solvedata.app/latest/integrations/magento) for more in-depth instructions.
+
+# Developing
+
+## CLI commands to import data
+* Import customers to Solve
+  `solve:import:customers [--from [FROM]] [--to [TO]]`
+* Import orders to Solve
+  `solve:import:orders [--from [FROM]] [--to [TO]]`
+
+Attributes `--from` and `--to` is optional.
+
+## Docker Development environment
 
 Requires docker & docker-compose.
 
@@ -133,11 +162,3 @@ See [Magento's documentation on events and observers](https://devdocs.magento.co
 1. Go to Solve configs in Admin Panel `Stores > Configuration > Services > Solve Data`
 1. Enable you new event in `Enabled Events`
 1. Click "Save Config"
-
-## CLI commands to import data
-* Import customers to Solve
-  `solve:import:customers [--from [FROM]] [--to [TO]]`
-* Import orders to Solve
-  `solve:import:orders [--from [FROM]] [--to [TO]]`
-
-Attributes `--from` and `--to` is optional.
