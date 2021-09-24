@@ -34,7 +34,9 @@ assertContains () {
 
 main () {
   local version
-  version="$(grep -Po '"version":\s*"\K[^"]*(?=")' "${DIR}/composer.json")"
+
+  # Grab the version from composer.json with utilities available in BusyBox.
+  version="$(grep -Eo '"version":\s*"[^"]*"' "${DIR}/composer.json" | cut -d':' -f2 | tr -d ':[:space:]"')"
   log info "Detected version v${version} from composer file"
 
   assertContains etc/module.xml '<module name="SolveData_Events" setup_version="'"${version}"'">'
