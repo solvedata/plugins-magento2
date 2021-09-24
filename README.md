@@ -130,7 +130,7 @@ See [Magento's documentation on events and observers](https://devdocs.magento.co
     ```
 1. Run `php bin/magento setup:upgrade`
 1. Run `php bin/magento setup:di:compile`
-1. Go to Solve configs in Admin Panel `Stores > Configuration > Services > Solve Data`
+1. Go to Solve configs in Admin Panel `Stores > Configuration > Services > Solve`
 1. Enable you new event in `Enabled Events`
 1. Click "Save Config"
 

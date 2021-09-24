@@ -154,7 +154,7 @@ abstract class EventAbstract extends DataObject
     }
 
     /**
-     * Prepared observer data and send to solve data events
+     * Prepared observer data and send to solve events
      *
      * @return EventAbstract
      *

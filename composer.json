@@ -1,6 +1,6 @@
 {
   "name": "solvedata/plugins-magento2",
-  "description": "Magento 2 Solve Data extension",
+  "description": "Solve Magento 2 extension",
   "license": "Apache-2.0",
   "type": "magento2-module",
   "version": "2.1.1",

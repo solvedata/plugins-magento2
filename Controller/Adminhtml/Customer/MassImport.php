@@ -55,7 +55,7 @@ class MassImport extends AbstractMassAction
     }
 
     /**
-     * Import selected customers to Solve Data
+     * Import selected customers to Solve
      *
      * @param AbstractCollection $collection
      *
@@ -69,15 +69,15 @@ class MassImport extends AbstractMassAction
 
         if ($countNonImportCustomer && $countImportCustomer) {
             $this->messageManager->addErrorMessage(
-                sprintf('%d customer(s) were not added to queue for import to Solve Data.', $countNonImportCustomer)
+                sprintf('%d customer(s) were not added to queue for import to Solve.', $countNonImportCustomer)
             );
         } else if ($countNonImportCustomer) {
-            $this->messageManager->addErrorMessage('No customer(s) were added to queue for import to Solve Data.');
+            $this->messageManager->addErrorMessage('No customer(s) were added to queue for import to Solve.');
         }
 
         if ($countImportCustomer) {
             $this->messageManager->addSuccessMessage(
-                sprintf('You have added to queue %d customer(s) for import to Solve Data.', $countImportCustomer)
+                sprintf('You have added to queue %d customer(s) for import to Solve.', $countImportCustomer)
             );
         }
 
