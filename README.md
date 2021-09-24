@@ -49,7 +49,7 @@ php bin/magento solve:import:orders [--from [FROM-ID]] [--to [TO-ID]]
 
 If you have questions, concerns, bug reports, etc., please file an issue in this repository's [Issue Tracker](https://github.com/solvedata/plugins-magento2/issues).
 
-Solve customers can help contact support via emailing support@solve.io.
+Additionally Solve customers can contact support via emailing support@solve.io.
 
 ## Getting involved/Contributing
 
