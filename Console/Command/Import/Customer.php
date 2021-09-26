@@ -45,7 +45,7 @@ class Customer extends ImportAbstract
     protected function configure()
     {
         $this->setName('solve:import:customers');
-        $this->setDescription('Import customers to Solve Data.');
+        $this->setDescription('Import customers to Solve.');
 
         parent::configure();
     }
@@ -77,7 +77,7 @@ class Customer extends ImportAbstract
         try {
             $affectedRows = $this->import($input, $output);
             $output->writeln(sprintf(
-                '<info>You have added to queue %d customer(s) for import to Solve Data.</info>',
+                '<info>You have added to queue %d customer(s) for import to Solve.</info>',
                 $affectedRows
             ));
         } catch (\Throwable $t) {

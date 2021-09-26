@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
         <add id="SolveData_Events::event"
-             title="Solve Data"
+             title="Solve"
              translate="title"
              module="SolveData_Events"
              parent="Magento_Backend::system"
@@ -10,7 +10,7 @@
              dependsOnModule="SolveData_Events"
              resource="SolveData_Events::event"/>
         <add id="SolveData_Events::event_listing"
-             title="Events"
+             title="Event Queue"
              translate="title"
              module="SolveData_Events"
              parent="SolveData_Events::event"

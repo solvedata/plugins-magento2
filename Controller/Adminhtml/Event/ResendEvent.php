@@ -71,7 +71,7 @@ class ResendEvent extends Action
         }
 
         $this->messageManager->addSuccessMessage(
-            sprintf('You have added to queue %d event(s) to resend to Solve Data.', $createdEventsCount)
+            sprintf('You have added to queue %d event(s) to resend to Solve.', $createdEventsCount)
         );
 
         return $this->createRedirection();

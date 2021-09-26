@@ -6,7 +6,7 @@
                 <settings>
                     <url path="solvedata_events/order/massImport"/>
                     <type>import_to_solvedata</type>
-                    <label translate="true">Import To Solve Data</label>
+                    <label translate="true">Import To Solve</label>
                 </settings>
             </action>
         </massaction>
