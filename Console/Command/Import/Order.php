@@ -45,7 +45,7 @@ class Order extends ImportAbstract
     protected function configure()
     {
         $this->setName('solve:import:orders');
-        $this->setDescription('Import orders to Solve Data.');
+        $this->setDescription('Import orders to Solve.');
 
         parent::configure();
     }
@@ -77,7 +77,7 @@ class Order extends ImportAbstract
         try {
             $affectedRows = $this->import($input, $output);
             $output->writeln(sprintf(
-                '<info>You have added to queue %d order(s) for import to Solve Data.</info>',
+                '<info>You have added to queue %d order(s) for import to Solve.</info>',
                 $affectedRows
             ));
         } catch (\Throwable $t) {

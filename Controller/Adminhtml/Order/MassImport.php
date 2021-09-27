@@ -39,7 +39,7 @@ class MassImport extends AbstractMassAction implements HttpPostActionInterface
     }
 
     /**
-     * Import selected orders to Solve Data
+     * Import selected orders to Solve
      *
      * @param AbstractCollection $collection
      *
@@ -53,15 +53,15 @@ class MassImport extends AbstractMassAction implements HttpPostActionInterface
 
         if ($countNonImportOrder && $countImportOrder) {
             $this->messageManager->addErrorMessage(
-                sprintf('%d order(s) were not added to queue for import to Solve Data.', $countNonImportOrder)
+                sprintf('%d order(s) were not added to queue for import to Solve.', $countNonImportOrder)
             );
         } else if ($countNonImportOrder) {
-            $this->messageManager->addErrorMessage('No order(s) were added to queue for import to Solve Data.');
+            $this->messageManager->addErrorMessage('No order(s) were added to queue for import to Solve.');
         }
 
         if ($countImportOrder) {
             $this->messageManager->addSuccessMessage(
-                sprintf('You have added to queue %d order(s) for import to Solve Data.', $countImportOrder)
+                sprintf('You have added to queue %d order(s) for import to Solve.', $countImportOrder)
             );
         }
 
