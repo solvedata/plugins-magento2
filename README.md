@@ -1,143 +1,70 @@
-# Solve's Magento Extension
+# Solve Magento 2 Integration
 
-## Development environment
+![Build Status](https://github.com/solvedata/plugins-magento2/workflows/ci/badge.svg)
+[![Latest Stable Version](https://poser.pugx.org/solvedata/plugins-magento2/v)](https://packagist.org/packages/solvedata/plugins-magento2)
+[![License](https://poser.pugx.org/solvedata/plugins-magento2/license)](https://github.com/solvedata/plugins-magento2/blob/main/LICENSE)
+[![PHP Version Require](https://poser.pugx.org/solvedata/plugins-magento2/require/php)](https://packagist.org/packages/solvedata/plugins-magento2)
 
-Requires docker & docker-compose.
+![Integration Architecture](extension-architecture.svg)
 
-### Setup
+## Getting Started
 
-1. Run the install script at the root of the repository
-    
-    `./install.sh`
-2. During the installation project, you will need to enter the next information:
-    * Directory to setup the Magento project. This is relative to your current directory, and we recommend placing this directory outside of the git repo. For example `../magento`.
+Run the following commands to install the latest version (`v2.1.1`) on your Magento server.
 
-    * The magento version to install. If you do not specify a version, the latest version will be installed. We are currently testing with `2.3.5`.
+```shell
+$ composer require solvedata/plugins-magento2==2.1.1
 
-    * Magento authentication keys. See [Magento's documention](https://devdocs.magento.com/guides/v2.4/install-gde/prereq/connect-auth.html) for how to create/retrive these keys.
-
-### Enabling cron jobs
-
-Run the following command from the Magento project directory (not the repository root)
-
-`./vendor/solvedata/plugins-magento2/docker/tools.sh run_cron`
-
-### Helpful Commands
-
-Run the following command Magento project directory (not the repository root) to print all available commands
-
-`./vendor/solvedata/plugins-magento2/docker/tools.sh`
-
-### Helpful links
-
-- http://solvedata.local - Main Site
-
-### Running unit tests
-
-**Installing phpunit**
-We are using an older version of phpunit to avoid dependency conflicts with Magento's dependencies.
-```
-composer require --ignore-platform-reqs --dev phpunit/phpunit ^6
+$ php bin/magento module:enable SolveData_Events
+$ php bin/magento setup:upgrade
+$ php bin/magento setup:static-content:deploy -f
 ```
 
-**Running tests**
+See [Solve's documentation](https://docs.solvedata.app/latest/integrations/magento) for more in-depth instructions.
+
+## Magento Compatibility
+
+Compatible and tested with Magento `v2.3`.
+
+## Features
+
+- Embeds Solve's JS Client Side SDK into the Store's design layout
+- Synchronizes Magento data into Solve in real-time (in 1 minutes batches)
+    - Customers
+    - Carts
+    - Orders
+    - Payments
+    - Returns
+- Recover abandoned carts via the `/solve/reclaim` endpoint
+
+## Importing historic data
+
+### Importing customers
+
+
+```shell
+# Arguments `--from` and `--to` are optional
+
+$ php bin/magento solve:import:customers [--from [FROM-ID]] [--to [TO-ID]]
 ```
-./vendor/phpunit/phpunit/phpunit ./vendor/solvedata/plugins-magento2/tests/
+
+### Importing orders
+
+
+```shell
+# Arguments `--from` and `--to` are optional
+
+$ php bin/magento solve:import:orders [--from [FROM-ID]] [--to [TO-ID]]
 ```
 
-## Handle a new Magento event
-1. Add a new event to `etc/events.xml` and describe which observer class will be processed.
-See [Magento's documentation on events and observers](https://devdocs.magento.com/guides/v2.4/extension-dev-guide/events-and-observers.html).
-    ```xml
-    <event name="customer_register_success">
-        <observer name="prepare_customer_register_success_data"
-                  instance="SolveData\Events\Observer\Customer\RegisterObserver" />
-    </event>
-    ```
-1. Create new register handler class in the `Model/Event/RegisterHandler` directory and extending the `SolveData\Events\Model\Event\RegisterHandler\EventAbstract` base class.
-    ```php
-    class RegisterSuccess extends EventAbstract
-    {
-        public function prepareData(Observer $observer): EventAbstract
-        {
-            /** @var CustomerInterface $customer */
-            $customer = $observer->getEvent()->getCustomer();
-    
-            $this->setAffectedEntityId((int)$customer->getId())
-                ->setPayload(['customer' => $customer]);
-    
-            return $this;
-        }
-    }
-    ```
-1. Create new observer file in `Observer` folder and extend it from `SolveData\Events\Observer\ObserverAbstract` class. Specify your class as handler.
-    ```php
-    class RegisterObserver extends ObserverAbstract
-    {
-        /**
-        * @param Config $config
-        * @param EventRepository $eventRepository
-        * @param Logger $logger
-        * @param RegisterSuccess $handler
-        */
-        public function __construct(
-            Config $config,
-            EventRepository $eventRepository,
-            Logger $logger,
-            RegisterSuccess $handler // <-- Your register handler
-        ) {
-            parent::__construct($config, $eventRepository, $logger, $handler);
-        }
-    }
-    ```
-1. Add a new event to the `SolveData\Events\Model\ConfigEventMutationConfig` class and describe which mutation classes will be processed.
-    ```php
-    function getMutationsForEvents(): array
-    {
-        return [
-            // ... Other events here
-            'customer_register_success' => [
-                \SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\CustomerRegisterSuccess::class
-            ]
-        ];
-    }
-    ```
-1. Create new mutation file in `Model/Event/Transport/Adapter/GraphQL/Mutation` folder and extend it from `SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract` class.
-   Write mutation query in `const QUERY = ...` and prepare variables in `getVariables` function.
-    ```php
-    class CustomerRegisterSuccess extends MutationAbstract
-    {
-        const QUERY = <<<'GRAPHQL'
-    mutation createOrUpdateProfile($input: ProfileInput!) {
-        createOrUpdateProfile(input: $input) {
-            id,
-            emails
-        }
-    }
-    GRAPHQL;
-    
-        public function getVariables(): array
-        {
-            $event = $this->getEvent();
-            $payload = $event['payload'];
-            $variables = [];
+## Getting help
 
-            // Preparing variables
-    
-            return $variables;
-        }
-    }
-    ```
-1. Run `php bin/magento setup:upgrade`
-1. Run `php bin/magento setup:di:compile`
-1. Go to Solve configs in Admin Panel `Stores > Configuration > Services > Solve`
-1. Enable you new event in `Enabled Events`
-1. Click "Save Config"
+If you have questions, concerns, bug reports, etc., please file an issue in this repository's [Issue Tracker](https://github.com/solvedata/plugins-magento2/issues).
 
-## CLI commands to import data
-* Import customers to Solve
-  `solve:import:customers [--from [FROM]] [--to [TO]]`
-* Import orders to Solve
-  `solve:import:orders [--from [FROM]] [--to [TO]]`
+Additionally Solve customers can contact support via emailing support@solve.io.
 
-Attributes `--from` and `--to` is optional.
+## Getting involved/Contributing
+
+The [developer instructions](DEVELOPING.md) contain details on how to setup the developer environment.
+
+To contribute, simply make a pull request and add a brief description (1-2 sentences) of your addition or change.
+For more details check the [contribution guidelines](CONTRIBUTING.md).
