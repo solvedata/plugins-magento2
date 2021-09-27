@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="solvedata_events" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Solve Data</label>
+            <label>Solve</label>
             <tab>service</tab>
             <resource>SolveData_Events::config</resource>
             <group id="hint" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -22,70 +22,91 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
-                <field id="enabled_anonymous_cart_events" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="debug" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Logging</label>
+                    <comment>
+                        <![CDATA[Enable logging at debug verbosity.
+                        When enabled debug level log messages will be written to the <code>var/log/solvedata_events_debug.log</code> file.
+                        ]]>
+                    </comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="enabled_anonymous_cart_events" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable anonymous carts</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="enabled">1</field>
                     </depends>
                 </field>
-                <field id="hmac_secret" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Abandoned Carts HMAC secret</label>
-                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                <field id="enabled_custom_cart_merge" translate="label" type="select" sortOrder="32" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable custom cart merging</label>
+                    <comment>
+                        <![CDATA[Config flag for whether the cart/quote merging behavior should be overridden with Solve's custom merge.
+                        The custom merge behavior prevents duplicated cart items after reclaiming a cart.
+                        ]]>
+                    </comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="enabled">1</field>
                     </depends>
                 </field>
-                <field id="enabled_convert_historical_carts" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="event_retention_period" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Event Retention Period</label>
+                    <comment>
+                        <![CDATA[Period to retain processed events in the database queue (i.e. <code>7 days</code>).
+                        More details on valid intervals <a href="https://www.php.net/manual/en/dateinterval.createfromdatestring.php" target="_blank">here</a>.
+                        Invalid durations will be ignored.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="enabled_convert_historical_carts" translate="label" type="select" sortOrder="51" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable cart conversions for historical orders</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="enabled">1</field>
                     </depends>
                 </field>
-                <field id="enabled_custom_cart_merge" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Config flag for whether the cart/quote merging behavior can be overridden to prevent duplicated cart items</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="enabled">1</field>
-                    </depends>
-                </field>
-                <field id="debug" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Debug</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <depends>
-                        <field id="enabled">1</field>
-                    </depends>
-                </field>
-                <field id="cron_batch_size" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="cron_batch_size" translate="label" type="text" sortOrder="52" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Cron batch size</label>
                     <frontend_class>validate-number</frontend_class>
                     <comment>Number of events for a cron task to process as a batch from the events table.</comment>
                 </field>
-                <field id="transaction_batch_size" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="transaction_batch_size" translate="label" type="text" sortOrder="53" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Transaction batch size</label>
                     <frontend_class>validate-number</frontend_class>
                     <comment>Number of events to process at once in a DB transaction.</comment>
                 </field>
-                <field id="sentry_dsn" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="sentry_dsn" translate="label" type="text" sortOrder="54" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sentry DSN</label>
+                    <frontend_class>masked</frontend_class>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-                </field>
-                <field id="event_retention_period" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Event Retention Period (i.e. 7 days)</label>
                 </field>
             </group>
             <group id="api" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>API Settings</label>
                 <field id="url" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <comment>
+                        <![CDATA[URL to the GraphQL endpoint on your Solve Stack.
+                        More details <a href="https://docs.solvedata.app/latest/api#finding-your-api-url" target="_blank">here</a>.
+                        ]]>
+                    </comment>
                     <label>API Url</label>
                 </field>
-                <field id="key" translate="label" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="key" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>API Key</label>
+                    <comment>
+                        <![CDATA[API Key generated from a <code>Server API (Protected)</code> Integration.
+                        See details on how to generate this Integration Key <a href="https://docs.solvedata.app/latest/api#finding-your-api-url" target="_blank">here</a>.
+                        ]]>
+                    </comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="password" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Password</label>
+                    <comment>Password for the above API Key.</comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
                 <field id="max_attempt_count" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -100,6 +121,12 @@
                 </field>
             </group>
             <group id="sdk" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment>
+                    <![CDATA[
+                    The Solve Web SDK can be embedded into the Magento Store to track customer interactions, identify user behavior or to send custom events.
+                    More details <a href="https://docs.solvedata.app/latest/web-sdk" target="_blank">here</a>.
+                    ]]>
+                </comment>
                 <label>Web SDK</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
@@ -107,7 +134,12 @@
                 </field>
                 <field id="init_code" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Initialization Code</label>
-                    <comment>Your Solve initialization code snippet into the head of your HTML page.</comment>
+                    <comment>
+                        <![CDATA[
+                        Your Solve initialization code to be embedded into the head of the Store's layout.
+                        More details <a href="https://docs.solvedata.app/latest/web-sdk/installation" target="_blank">here</a>.
+                        ]]>
+                    </comment>
                     <depends>
                         <field id="enabled">1</field>
                     </depends>
