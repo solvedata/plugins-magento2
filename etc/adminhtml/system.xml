@@ -63,7 +63,8 @@
                     </comment>
                 </field>
                 <field id="enabled_convert_historical_carts" translate="label" type="select" sortOrder="51" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable cart conversions for historical orders</label>
+                    <label>Convert Historical Carts</label>
+                    <comment>Config flag for whether cart conversion should be enabled for historical orders.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="enabled">1</field>
@@ -78,6 +79,17 @@
                     <label>Transaction batch size</label>
                     <frontend_class>validate-number</frontend_class>
                     <comment>Number of events to process at once in a DB transaction.</comment>
+                </field>
+                <field id="hmac_secret" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cart URL Secret</label>
+                    <comment>
+                        <![CDATA[The HMAC secret used to sign abandoned cart recovery URLs to prevent them from being enumerated.]]>
+                    </comment>
+                    <frontend_class>masked</frontend_class>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
                 </field>
                 <field id="sentry_dsn" translate="label" type="text" sortOrder="54" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sentry DSN</label>
