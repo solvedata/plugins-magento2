@@ -44,6 +44,10 @@ class Converter
     {
         $result = [];
         foreach ($data as $key => $item) {
+            if (is_null($item)) {
+                $result[$key] = null;
+                continue;
+            }
             if (is_scalar($item)) {
                 $result[$key] = $item;
                 continue;
@@ -58,7 +62,7 @@ class Converter
             }
 
             if (is_string($key)) {
-                throw new \LogicException(sprintf('Unable to convert data for "%s"', $key));
+                throw new \LogicException(sprintf('Unable to convert data for "%s" of type "%s"', $key, get_class($item)));
             } else {
                 throw new \LogicException('Unable to convert data');
             }

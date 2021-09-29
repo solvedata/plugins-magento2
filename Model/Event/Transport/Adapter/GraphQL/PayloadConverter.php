@@ -176,7 +176,7 @@ class PayloadConverter
      *
      * @throws \Exception
      */
-    protected function getProfileId(string $email, array $area): ?string
+    public function getProfileId(string $email, array $area): ?string
     {
         try {
             $website = $this->getWebsiteDataByArea($area);

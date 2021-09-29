@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -euxo pipefail
-TMP_DIR=$(mktemp -d)
 
 run_composer() {
   # See https://hub.docker.com/_/composer for details around
@@ -53,5 +52,6 @@ if [ ! -f "composer.json" ]; then
     kiwicommerce/module-cron-scheduler=1.0.7 \
     kiwicommerce/module-admin-activity \
     kiwicommerce/module-login-as-customer \
-    solvedata/plugins-magento2
+    sentry/sentry=3.0.0-beta1 \
+    'solvedata/plugins-magento2=*'
 fi
