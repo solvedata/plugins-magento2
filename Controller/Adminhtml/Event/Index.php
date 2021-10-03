@@ -36,7 +36,7 @@ class Index extends Action
     public function execute(): Page
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->prepend((__('Events')));
+        $resultPage->getConfig()->getTitle()->prepend((__('Event Queue')));
 
         return $resultPage;
     }

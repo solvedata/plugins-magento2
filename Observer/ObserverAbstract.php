@@ -60,6 +60,10 @@ abstract class ObserverAbstract implements ObserverInterface
     {
         try {
             if (!$this->config->isEnabledEvent($observer->getEvent()->getName())) {
+                $this->logger->debug('Observer is not enabled', [
+                    'observer'     => self::class,
+                    'eventHandler' => get_class($this->handler)
+                ]);
                 return $this;
             }
 

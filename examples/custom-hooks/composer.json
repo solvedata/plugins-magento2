@@ -1,0 +1,19 @@
+{
+  "name": "solvedata/plugins-magento2-examples-custom-hooks",
+  "description": "",
+  "license": "Apache-2.0",
+  "type": "magento2-module",
+  "version": "0.1.0",
+  "require": {
+    "php": "~7.2",
+    "solvedata/plugins-magento2": "2.1.1"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "SolveData\\CustomHooks\\": ""
+    }
+  }
+}

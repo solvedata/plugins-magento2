@@ -28,7 +28,7 @@ root_setup () {
   apt-get update
   apt-get install --yes git jq moreutils
 
-  usermod --home /home/www-data www-data
+  usermod --shell /bin/bash --home /home/www-data www-data
   mkdir -p ~www-data
   chown www-data:www-data ~www-data
 }
@@ -57,7 +57,7 @@ EOF
 mount_plugin_source() {
   local mount_dir=~www-data/magento/vendor/solvedata/plugins-magento2
 
-  if findmnt -- "${mount_dir}" 2>&1 >/dev/null; then
+  if findmnt -- "${mount_dir}" >/dev/null 2>&1; then
     return
   fi
 
@@ -77,7 +77,7 @@ wait_for_mysql() {
     cd ~/magento/vendor/solvedata/plugins-magento2/docker
 
     echo "Waiting for mysql to be ready"
-    until docker-compose exec -T mysql mysql -e 'select 1' 2>&1 >/dev/null; do
+    until docker-compose exec -T mysql mysql -e 'select 1' >/dev/null; do
       echo -n '.'
     done
     echo
