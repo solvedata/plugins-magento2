@@ -13,7 +13,7 @@ class EventMutationConfigPlugin
 {
     private $customConfiguration = [
         // The configuration is an array of event names (see SolveData\Events\Model\Event)
-        // to a list of GraphQL mutation(s) which will process the event on the other side of the into Solve's GraphQL API 
+        // to a list of GraphQL mutation(s) which will process the event into Solve's GraphQL API.
         'review_save_after' => [
             \SolveData\CustomHooks\Model\GraphQL\CreateReviewMutation::class
         ]
