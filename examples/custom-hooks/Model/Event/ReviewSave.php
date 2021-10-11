@@ -19,12 +19,12 @@ class ReviewSave extends EventAbstract
      */
     protected function isAllowed(Observer $observer): bool
     {
-        // This function can be customized to ...
+        // The parent's function can be overridden to decide whether or not to handle the Magento event.
         return parent::isAllowed($observer);
     }
 
     /**
-     * Get observer data
+     * Prepare data to be inserted into Solve Event Queue for a background cronjob to process.
      *
      * @param Observer $observer
      *
@@ -39,11 +39,15 @@ class ReviewSave extends EventAbstract
         /** @var Review $review */
         $review = $event->getDataObject();
 
-        $this->setAffectedEntityId((int)$review->getEntityId())
-            ->setPayload([
-                'review' => $review,
-                'area'   => $this->eventHelper->getAreaPayloadData($review->getStoreId())
-            ]);
+        // The affectedEntityId is a required field which is used to debug failing events via the Admin's Event Queue page.
+        $this->setAffectedEntityId((int)$review->getEntityId());
+
+        // The event's payload contains the relevant information from the Magento event.
+        // The payload array will be serialized as JSON and stored in the Event Queue table (`solvedata_events`).
+        $this->setPayload([
+            'review' => $review,
+            'area'   => $this->eventHelper->getAreaPayloadData($review->getStoreId())
+        ]);
 
         return $this;
     }

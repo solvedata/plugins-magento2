@@ -69,6 +69,11 @@ $ ./vendor/phpunit/phpunit/phpunit ./vendor/solvedata/plugins-magento2/tests/
 ```
 
 # Handling a new Magento event
+
+> **NOTE:** We suggest you use the extension's "custom hooks" to extend the extension without forking the extension.
+>
+> See [examples/custom-hooks/README.md](examples/custom-hooks/README.md) for an example.
+
 1. Add a new event to `etc/events.xml` and describe which observer class will be processed.
 See [Magento's documentation on events and observers](https://devdocs.magento.com/guides/v2.4/extension-dev-guide/events-and-observers.html).
     ```xml
