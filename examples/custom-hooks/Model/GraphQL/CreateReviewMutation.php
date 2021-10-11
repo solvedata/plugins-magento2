@@ -10,9 +10,9 @@ use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbst
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 use SolveData\Events\Model\Logger;
 
-class CreateReviewEventMutation extends MutationAbstract
+class CreateReviewMutation extends MutationAbstract
 {
-    // See https://docs.solvedata.app/latest/api/events for more details on raw events.
+    // For more details see https://docs.solvedata.app/latest/api/events
     const QUERY = <<<'GRAPHQL'
 mutation queue_event($eventInput: EventInput!) {
     queue_event(input: $eventInput) {
@@ -49,6 +49,7 @@ GRAPHQL;
 
         $profileId = null;
         if (!empty($review['customer_id'])) {
+            // Look up the Solve Profile ID for the given customer's email address.
             $customer = $this->customerRepository->getById($review['customer_id']);
             $profileId = $this->payloadConverter->getProfileId($customer->getEmail(), $area);
         }

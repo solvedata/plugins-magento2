@@ -22,7 +22,7 @@ class ReviewSavedAfter extends ObserverAbstract
         Config $config,
         EventRepository $eventRepository,
         Logger $logger,
-        ReviewSave $handler
+        ReviewSave $handler // The `ReviewSavedAfter` observer depends upon the `ReviewSave` event handler
     ) {
         parent::__construct($config, $eventRepository, $logger, $handler);
     }
