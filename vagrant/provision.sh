@@ -70,9 +70,9 @@ mount_plugin_source() {
   fi
 
   if ! findmnt -- "${mount_dir}/vendor" >/dev/null 2>&1; then
-    # Obscure a vendor directory by mounting an empty tmpfs filesystem over the top.
+    # Obscure the vendor directory by mounting an empty tmpfs filesystem over the top.
     # This vendor directory may exist to contain depdenecies that your IDE needs during local deveoplement.
-    # If we don't obscure this vendor directory Magento's DI compilation will automatically discover it and error.
+    # If we didn't obscure this vendor directory Magento's DI compilation will discover it and error.
 
     if [[ ! -d "${mount_dir}/vendor" ]]; then
       mkdir -p "${mount_dir}/vendor"
