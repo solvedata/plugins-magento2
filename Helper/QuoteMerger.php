@@ -9,7 +9,7 @@ use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Item\Processor as ItemProcessor;
 
 /**
- * Solve's customisation of Magento\Quote\Model\Quote's quote merging that uses
+ * Solve's customization of Magento\Quote\Model\Quote's quote merging that uses
  * the $source cart's quantity for a given item rather than summing $source and
  * $dest item quantities to avoid duplicating items when a cart is reclaimed.
  * If the item is in the $source but not $dest, then the item will be copied to
@@ -31,7 +31,7 @@ class QuoteMerger
     }
 
     /**
-     * Merge an abanadoned cart into the destination quote.
+     * Merge an abandoned cart into the destination quote.
      *
      * The result is the union of the two carts.
      *
@@ -49,7 +49,7 @@ class QuoteMerger
             $found = false;
             foreach ($dest->getAllItems() as $quoteItem) {
                 if ($quoteItem->compare($item)) {
-                    // Customisation: Set the merge quantity to be $source
+                    // Customization: Set the merge quantity to be $source
                     // cart's quantity. We assume that the $source cart is the
                     // one that's the most recently updated so we should use
                     // that quantity. User would not want to buy double the
@@ -58,7 +58,7 @@ class QuoteMerger
                     // overridden by the destination quantity if source quantity
                     // was set more recently.
                     $mergedQty = $item->getQty();
-                    // End of Customisation
+                    // End of Customization
 
                     $quoteItem->setQty($mergedQty);
                     $this->itemProcessor->merge($item, $quoteItem);
