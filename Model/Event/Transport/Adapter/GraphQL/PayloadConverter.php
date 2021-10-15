@@ -310,6 +310,14 @@ class PayloadConverter
             $attributes['imported_at'] = $this->getFormattedDatetime();
         }
 
+        if (!empty($order[OrderInterface::COUPON_CODE])) {
+            $attributes['magento_coupon_code'] = $order[OrderInterface::COUPON_CODE];
+        }
+
+        if (!empty($order['coupon_rule_name'])) {
+            $attributes['magento_coupon_rule_name'] = $order['coupon_rule_name'];
+        }
+
         return $attributes;
     }
 
