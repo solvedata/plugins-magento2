@@ -57,19 +57,33 @@ EOF
 mount_plugin_source() {
   local mount_dir=~www-data/magento/vendor/solvedata/plugins-magento2
 
-  if findmnt -- "${mount_dir}" >/dev/null 2>&1; then
-    return
+  if ! findmnt -- "${mount_dir}" >/dev/null 2>&1; then
+    # Delete the existing plugin directory that composer pulled when resolving dependencies
+    rm -rf -- "${mount_dir}"
+
+    mkdir -- "${mount_dir}"
+    chown www-data:www-data -- "${mount_dir}"
+    mount \
+      -t vboxsf \
+      -o rw,nodev,relatime,iocharset=utf8,uid=33,gid=33 \
+      plugins-magento2 "${mount_dir}"
   fi
 
-  # Delete the existing plugin directory that composer pulled when resolving dependencies
-  rm -rf -- "${mount_dir}"
+  if ! findmnt -- "${mount_dir}/vendor" >/dev/null 2>&1; then
+    # Obscure a vendor directory by mounting an empty tmpfs filesystem over the top.
+    # This vendor directory may exist to contain depdenecies that your IDE needs during local deveoplement.
+    # If we don't obscure this vendor directory Magento's DI compilation will automatically discover it and error.
 
-  mkdir -- "${mount_dir}"
-  chown www-data:www-data -- "${mount_dir}"
-  mount \
-    -t vboxsf \
-    -o rw,nodev,relatime,iocharset=utf8,uid=33,gid=33 \
-    plugins-magento2 "${mount_dir}"
+    if [[ ! -d "${mount_dir}/vendor" ]]; then
+      mkdir -p "${mount_dir}/vendor"
+      chown www-data:www-data -- "${mount_dir}/vendor"
+    fi
+    
+    mount \
+      -t tmpfs \
+      -o size=0 \
+      plugins-magento2-obscure-vendor "${mount_dir}/vendor"
+  fi
 }
 
 wait_for_mysql() {
