@@ -592,7 +592,7 @@ class PayloadConverter
             'channel'         => self::CHANNEL_WEB,
             'adjustments'     => $this->prepareOrderAdjustments($order),
             'attributes'      => json_encode($this->orderAttributes($order, $area)),
-            'provider'        => $this->getOrderProvider($area),
+            'provider'        => $this->getSolveStore($area),
         ];
 
         if (!empty($order['created_at'])) {
@@ -688,7 +688,7 @@ class PayloadConverter
             //  entity ID field does not always exist.
             'id'         => $orderId . "-payment",
             'order_id'   => $orderId,
-            'provider'   => $this->getOrderProvider($area),
+            'provider'   => $this->getSolveStore($area),
             'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
             'attributes' => json_encode($this->paymentAndReturnAttributes($payment, $area)),
         ];
@@ -714,7 +714,7 @@ class PayloadConverter
             //  entity ID field does not always exist.
             'id'            => $orderId . "-return",
             'order_id'      => $order[OrderInterface::INCREMENT_ID],
-            'provider'      => $this->getOrderProvider($area),
+            'provider'      => $this->getSolveStore($area),
             'return_reason' => 'Refund',
             'adjustments'   => [
                 [
@@ -961,7 +961,7 @@ class PayloadConverter
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->cartAttributes($quote, $area, $options)),
-            'provider'   => $this->getOrderProvider($area),
+            'provider'   => $this->getSolveStore($area),
             'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];
 
