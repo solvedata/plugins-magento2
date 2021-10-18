@@ -519,9 +519,9 @@ class PayloadConverter
 
         $data = [
             'identifiers' => $identifiers,
-            'firstName'   => $customer[CustomerInterface::FIRSTname'],
-            'lastName'    => $customer[CustomerInterface::LASTname'],
-            'fullName'    => $customer[CustomerInterface::FIRSTname'] . ' ' . $customer[CustomerInterface::LASTname'],
+            'firstName'   => $customer[CustomerInterface::FIRSTNAME] ?? null,
+            'lastName'    => $customer[CustomerInterface::LASTNAME] ?? null,
+            'fullName'    => ($customer[CustomerInterface::FIRSTNAME] ?? null) . ' ' . ($customer[CustomerInterface::LASTNAME] ?? null),
             'attributes'  => json_encode($attributes)
         ];
 
