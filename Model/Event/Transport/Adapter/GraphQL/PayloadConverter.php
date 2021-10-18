@@ -942,7 +942,7 @@ class PayloadConverter
             'currency'   => $quote['quote_currency_code'],
             'items'      => $this->convertItemsData($allVisibleItems),
             'attributes' => json_encode($this->cartAttributes($quote, $area, $options)),
-            'provider'   => $this->getSolveStore($area),
+            'provider'   => $this->getOrderProvider($area),
             'cart_url'   => $this->getReclaimCartUrl($quote, $area)
         ];
 
