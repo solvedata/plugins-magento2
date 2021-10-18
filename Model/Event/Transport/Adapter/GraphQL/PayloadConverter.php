@@ -25,6 +25,7 @@ use SolveData\Events\Model\Logger;
 
 class PayloadConverter
 {
+    const PROVIDER = ProductMetadata::PRODUCT_NAME;
     const CHANNEL_WEB = 'WEB';
 
     const ORDER_STATUS_CREATED   = 'CREATED';
@@ -374,32 +375,12 @@ class PayloadConverter
         return $attributes;
     }
 
-    /**
-     * Get the Store identifier used to identify the Magento Store in Solve.
-     * 
-     * @deprecated Use getSolveStore instead.
-     *
-     * @param array $area Array containing the view, website & store context.
-     * 
-     * @return string identifier to be used in Solve's GraphQL API.
-     */
     public function getOrderProvider(array $area): string
     {
-        return $this->getSolveStore($area);
+        $website = $this->getWebsiteDataByArea($area);
+        return !empty($website) ? $website['code'] : self::PROVIDER;
     }
 
-    /**
-     * Get the Store identifier used to identify the Magento Store in Solve.
-     *
-     * @param array $area Array containing the view, website & store context.
-     * 
-     * @return string identifier to be used in Solve's GraphQL API.
-     */
-    public function getSolveStore(array $area): string
-    {
-        $website = $this->getWebsiteDataByArea($area);
-        return !empty($website) ? $website['code'] : 'Magento';
-    }
 
     /**
      * Convert addresses payload to Solve GraphQL Address variables data
@@ -592,7 +573,7 @@ class PayloadConverter
             'channel'         => self::CHANNEL_WEB,
             'adjustments'     => $this->prepareOrderAdjustments($order),
             'attributes'      => json_encode($this->orderAttributes($order, $area)),
-            'provider'        => $this->getSolveStore($area),
+            'provider'        => $this->getOrderProvider($area),
         ];
 
         if (!empty($order['created_at'])) {
@@ -688,7 +669,7 @@ class PayloadConverter
             //  entity ID field does not always exist.
             'id'         => $orderId . "-payment",
             'order_id'   => $orderId,
-            'provider'   => $this->getSolveStore($area),
+            'provider'   => $this->getOrderProvider($area),
             'amount'     => sprintf('%.4F', $payment[OrderPaymentInterface::AMOUNT_PAID]),
             'attributes' => json_encode($this->paymentAndReturnAttributes($payment, $area)),
         ];
@@ -714,7 +695,7 @@ class PayloadConverter
             //  entity ID field does not always exist.
             'id'            => $orderId . "-return",
             'order_id'      => $order[OrderInterface::INCREMENT_ID],
-            'provider'      => $this->getSolveStore($area),
+            'provider'      => $this->getOrderProvider($area),
             'return_reason' => 'Refund',
             'adjustments'   => [
                 [
