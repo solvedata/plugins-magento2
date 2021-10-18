@@ -588,7 +588,7 @@ class PayloadConverter
         ];
 
         if (!empty($order['addresses'])) {
-            $input['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
+            $data['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
         }
 
         return $data;
