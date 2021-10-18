@@ -25,7 +25,6 @@ use SolveData\Events\Model\Logger;
 
 class PayloadConverter
 {
-    const PROVIDER = ProductMetadata::PRODUCT_NAME;
     const CHANNEL_WEB = 'WEB';
 
     const ORDER_STATUS_CREATED   = 'CREATED';
@@ -375,12 +374,32 @@ class PayloadConverter
         return $attributes;
     }
 
+    /**
+     * Get the Store identifier used to identify the Magento Store in Solve.
+     * 
+     * @deprecated Use getSolveStore instead.
+     *
+     * @param array $area Array containing the view, website & store context.
+     * 
+     * @return string identifier to be used in Solve's GraphQL API.
+     */
     public function getOrderProvider(array $area): string
     {
-        $website = $this->getWebsiteDataByArea($area);
-        return !empty($website) ? $website['code'] : self::PROVIDER;
+        return $this->getSolveStore($area);
     }
 
+    /**
+     * Get the Store identifier used to identify the Magento Store in Solve.
+     *
+     * @param array $area Array containing the view, website & store context.
+     * 
+     * @return string identifier to be used in Solve's GraphQL API.
+     */
+    public function getSolveStore(array $area): string
+    {
+        $website = $this->getWebsiteDataByArea($area);
+        return !empty($website) ? $website['code'] : 'Magento';
+    }
 
     /**
      * Convert addresses payload to Solve GraphQL Address variables data
@@ -498,15 +517,30 @@ class PayloadConverter
      */
     public function convertProfileData(array $customer, array $area): array
     {
+        $customerId = $customer[CustomerInterface::ID] ?? $customer['entity_id'] ?? null;
+
+        $identifiers = [
+            [
+                'type' => 'email',
+                'key'  => $customer[CustomerInterface::EMAIL]
+            ]
+        ];
+        if (!empty($customerId)) {
+            $identifiers[] = [
+                'type' => 'magento_customer_id',
+                'key'  => strval($customerId)
+            ];
+        }
+
         $attributes = $this->prepareAttributesData($area);
-        $attributes['magento_customer_id'] = $customer['entity_id'] ?? null;
+        $attributes['magento_customer_id'] = $customerId;
 
         $data = [
-            'email'      => $customer[CustomerInterface::EMAIL],
-            'firstName'  => $customer[CustomerInterface::FIRSTNAME],
-            'lastName'   => $customer[CustomerInterface::LASTNAME],
-            'fullName'   => $customer[CustomerInterface::FIRSTNAME] . ' ' . $customer[CustomerInterface::LASTNAME],
-            'attributes' => json_encode($attributes),
+            'identifiers' => $identifiers,
+            'firstName'   => $customer[CustomerInterface::FIRSTNAME],
+            'lastName'    => $customer[CustomerInterface::LASTNAME],
+            'fullName'    => $customer[CustomerInterface::FIRSTNAME] . ' ' . $customer[CustomerInterface::LASTNAME],
+            'attributes'  => json_encode($attributes)
         ];
 
         if (!empty($customer[CustomerInterface::CREATED_AT])) {
