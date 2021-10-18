@@ -19,7 +19,8 @@ GRAPHQL;
 
     public function isAllowed(): bool
     {
-        return !empty($this->getEmail());
+        $input = $this->getVariables()['input'];
+        return !empty($input);
     }
 
     /**
@@ -31,24 +32,15 @@ GRAPHQL;
      */
     public function getVariables(): array
     {
-        $input = [
-            'email' => $this->getEmail()
-        ];
-
-        return ['input' => $input];
-    }
-
-    private function getEmail(): ?string
-    {
         $event = $this->getEvent();
         $payload = $event['payload'];
 
-        $quote = $payload['quote'];
-        if (array_key_exists('customer_email', $quote)) {
-            $email = $quote['customer_email'];
-            return empty($email) ? null : $email;
-        } else {
-            return null;
-        }
+        // convertQuoteProfileData() will return null if the quote isn't associated with a customer
+        $input = $this->payloadConverter->convertQuoteProfileData(
+            $payload['quote'],
+            $payload['area']
+        );
+
+        return ['input' => $input];
     }
 }
