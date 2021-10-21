@@ -70,9 +70,10 @@ mount_plugin_source() {
   fi
 
   if ! findmnt -- "${mount_dir}/vendor" >/dev/null 2>&1; then
-    # Obscure the vendor directory by mounting an empty tmpfs filesystem over the top.
-    # This vendor directory may exist to contain depdenecies that your IDE needs during local deveoplement.
-    # If we didn't obscure this vendor directory Magento's DI compilation will discover it and error.
+    # We mount the plugin's source directory into Vagrant however we would want to avoid mounting the the vendor directory in from the plugin.
+    # This is because otherwise Magento will find the vendor's vendor directory and get confused.
+    #
+    # Since it's not possible to exclude directories in a mount, we have to do the next best thing and hide the directory by mounting a filesystem over the top.
 
     if [[ ! -d "${mount_dir}/vendor" ]]; then
       mkdir -p "${mount_dir}/vendor"

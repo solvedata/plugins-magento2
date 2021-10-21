@@ -29,18 +29,11 @@ GRAPHQL;
         $event = $this->getEvent();
         $payload = $event['payload'];
 
-        $order = $payload['order'];
-        $area = $payload['area'];
-
-        $input = [
-            'email' => $order['customer_email'],
-            'attributes' => json_encode($this->payloadConverter->prepareAttributesData($area))
+        return [
+            'input' => $this->payloadConverter->convertOrderProfileData(
+                $payload['order'],
+                $payload['area']
+            )
         ];
-
-        if (!empty($order['addresses'])) {
-            $input['addresses'] = $this->payloadConverter->convertAddressesData($order['addresses']);
-        }
-
-        return ['input' => $input];
     }
 }

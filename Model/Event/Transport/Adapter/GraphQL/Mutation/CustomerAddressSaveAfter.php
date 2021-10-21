@@ -27,7 +27,11 @@ GRAPHQL;
         $event = $this->getEvent();
         $payload = $event['payload'];
 
-        $input = $this->payloadConverter->convertProfileData($payload['customer'], $payload['area']);
+        $input = $this->payloadConverter->convertProfileData(
+            $payload['customer'],
+            $payload['area']
+        );
+        
         $input['addresses'][] = $this->payloadConverter->convertAddressData($payload['address']);
 
         return ['input' => $input];

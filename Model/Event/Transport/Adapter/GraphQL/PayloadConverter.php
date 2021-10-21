@@ -498,15 +498,30 @@ class PayloadConverter
      */
     public function convertProfileData(array $customer, array $area): array
     {
+        $customerId = $customer[CustomerInterface::ID] ?? $customer['entity_id'] ?? null;
+
+        $identifiers = [
+            [
+                'type' => 'email',
+                'key'  => $customer[CustomerInterface::EMAIL]
+            ]
+        ];
+        if (!empty($customerId)) {
+            $identifiers[] = [
+                'type' => 'magento_customer_id',
+                'key'  => strval($customerId)
+            ];
+        }
+
         $attributes = $this->prepareAttributesData($area);
-        $attributes['magento_customer_id'] = $customer['entity_id'] ?? null;
+        $attributes['magento_customer_id'] = $customerId;
 
         $data = [
-            'email'      => $customer[CustomerInterface::EMAIL],
-            'firstName'  => $customer[CustomerInterface::FIRSTNAME],
-            'lastName'   => $customer[CustomerInterface::LASTNAME],
-            'fullName'   => $customer[CustomerInterface::FIRSTNAME] . ' ' . $customer[CustomerInterface::LASTNAME],
-            'attributes' => json_encode($attributes),
+            'identifiers' => $identifiers,
+            'firstName'   => $customer[CustomerInterface::FIRSTNAME] ?? null,
+            'lastName'    => $customer[CustomerInterface::LASTNAME] ?? null,
+            'fullName'    => ($customer[CustomerInterface::FIRSTNAME] ?? null) . ' ' . ($customer[CustomerInterface::LASTNAME] ?? null),
+            'attributes'  => json_encode($attributes)
         ];
 
         if (!empty($customer[CustomerInterface::CREATED_AT])) {
@@ -535,6 +550,93 @@ class PayloadConverter
 
         return $data;
     }
+
+    /**
+     * Convert customer data from an order to Solve GraphQL Profile variables data
+     *
+     * @param array $order
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertOrderProfileData(array $order, array $area): array
+    {
+        $customerId = $order[OrderInterface::CUSTOMER_ID] ?? null;
+
+        $identifiers = [
+            [
+                'type' => 'email',
+                'key'  => $order[OrderInterface::CUSTOMER_EMAIL]
+            ]
+        ];
+        if (!empty($customerId)) {
+            $identifiers[] = [
+                'type' => 'magento_customer_id',
+                'key'  => strval($customerId)
+            ];
+        }
+
+        $attributes = $this->prepareAttributesData($area);
+        $attributes['magento_customer_id'] = $customerId;
+
+        $data = [
+            'identifiers' => $identifiers,
+            'firstName'   => $order[OrderInterface::CUSTOMER_FIRSTNAME] ?? null,
+            'lastName'    => $order[OrderInterface::CUSTOMER_LASTNAME] ?? null,
+            'fullName'    => ($order[OrderInterface::CUSTOMER_FIRSTNAME] ?? null) . ' ' . ($customer[OrderInterface::CUSTOMER_LASTNAME] ?? null),
+            'attributes'  => json_encode($attributes)
+        ];
+
+        if (!empty($order['addresses'])) {
+            $data['addresses'] = $this->convertAddressesData($order['addresses']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Convert customer data from a quote to Solve GraphQL Profile variables data
+     *
+     * @param array $quote
+     * @param array $area
+     *
+     * @return array
+     */
+    public function convertQuoteProfileData(array $quote, array $area): ?array
+    {
+        if (empty($quote['customer_email'])) {
+            return null;
+        }
+
+        $customerId = $quote['customer_id'] ?? null;
+
+        $identifiers = [
+            [
+                'type' => 'email',
+                'key'  => $quote['customer_email']
+            ]
+        ];
+        if (!empty($customerId)) {
+            $identifiers[] = [
+                'type' => 'magento_customer_id',
+                'key'  => strval($customerId)
+            ];
+        }
+
+        $attributes = $this->prepareAttributesData($area);
+        $attributes['magento_customer_id'] = $customerId;
+
+        $data = [
+            'identifiers' => $identifiers,
+            'firstName'   => $quote['customer_firstname'] ?? null,
+            'lastName'    => $quote['customer_lastname'] ?? null,
+            'fullName'    => ($quote['customer_firstname'] ?? null) . ' ' . ($quote['customer_lastname'] ?? null),
+            'attributes'  => json_encode($attributes)
+        ];
+
+        return $data;
+    }
+
 
     /**
      * Convert order data to Solve GraphQL Order variables data
