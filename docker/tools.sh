@@ -63,11 +63,7 @@ case "${command}" in
     recompile)
         echo "Regenerating Magento's generated code & content..."
         bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:upgrade
-        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:di:compile || (
-            echo "DI compile failed, attempting to retry after manaully deleting the generated directory"
-            bash "${DIR}/tools.sh" php_exec sudo -u www-data rm -rf /var/www/generated
-            bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:di:compile
-        )
+        bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:di:compile
         bash "${DIR}/tools.sh" php_exec sudo -u www-data php bin/magento setup:static-content:deploy --force
     ;;
 
