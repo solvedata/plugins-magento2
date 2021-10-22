@@ -9,10 +9,10 @@
 
 ## Getting Started
 
-Run the following commands to install the latest version (`v2.1.1`) on your Magento server.
+Run the following commands to install the latest version (`v2.2.0`) on your Magento server.
 
 ```shell
-$ composer require solvedata/plugins-magento2==2.1.1
+$ composer require solvedata/plugins-magento2==2.2.0
 
 $ php bin/magento module:enable SolveData_Events
 $ php bin/magento setup:upgrade

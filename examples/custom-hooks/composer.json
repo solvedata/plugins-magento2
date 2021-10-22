@@ -6,7 +6,7 @@
   "version": "0.1.0",
   "require": {
     "php": "~7.2",
-    "solvedata/plugins-magento2": "2.1.1"
+    "solvedata/plugins-magento2": "2.2.0"
   },
   "autoload": {
     "files": [
