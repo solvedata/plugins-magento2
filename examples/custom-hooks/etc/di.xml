@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="SolveData\Events\Model\Config\EventMutationConfig">
-        <plugin name="EventMutationConfigPlugin" type="SolveData\CustomHooks\Model\Config\EventMutationConfigPlugin" />
+        <plugin name="SolveDataCustomHooksEventMutationConfigPlugin" type="SolveData\CustomHooks\Plugin\EventMutationConfigPlugin" />
     </type>
 </config>

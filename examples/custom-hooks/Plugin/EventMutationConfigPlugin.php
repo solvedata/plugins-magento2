@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SolveData\CustomHooks\Model\Config;
+namespace SolveData\CustomHooks\Plugin;
 
 use SolveData\Events\Model\Config\EventMutationConfig;
 

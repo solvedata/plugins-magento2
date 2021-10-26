@@ -22,4 +22,4 @@ This example extends the Solve Magento extension to handle Magento reviews by em
 
 1. Then we need to override the configuration that maps the event names to the GraphQL mutation(s) that process them. We can do that by using [Magento's interceptor plugins](https://devdocs.magento.com/guides/v2.4/extension-dev-guide/plugins.html) to decorate the behavior of the extension's `SolveData\Events\Model\Config\EventMutationConfig` class.
 
-    See [Model/Config/EventMutationConfigPlugin.php](Model/Config/EventMutationConfigPlugin.php) and [etc/di.xml](etc/di.xml).
+    See [Plugin/EventMutationConfigPlugin.php](Plugin/EventMutationConfigPlugin.php) and [etc/di.xml](etc/di.xml).

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace SolveData\CustomHooks\Model\GraphQL;
 
-use Magento\Review\Model\Review;
 use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Review\Model\Review;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbstract;
 use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\PayloadConverter;
 use SolveData\Events\Model\Logger;
@@ -57,6 +57,7 @@ GRAPHQL;
         $eventInput = [
             'type'       => 'custom_product_reviewed',
             'event_time' => $this->payloadConverter->getFormattedDatetime($review['created_at']),
+            'store'      => $this->payloadConverter->getOrderProvider($area),
             'payload'    => [
                 'profile_id' => $profileId,
                 'status'     => $this->convertReviewStatus($review),
@@ -64,7 +65,7 @@ GRAPHQL;
             ]
         ];
 
-        // The keys must correspond to the variables defined in the above GraphQL request.
+        // The array corresponds to GraphQL request defined at the top of the class.
         return ['eventInput' => $eventInput];
     }
 
