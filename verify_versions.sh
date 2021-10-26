@@ -42,6 +42,11 @@ main () {
   assertContains etc/module.xml '<module name="SolveData_Events" setup_version="'"${version}"'">'
   assertContains README.md 'latest version (`v'"${version}"'`)'
   assertContains README.md "composer require solvedata/plugins-magento2==${version}"
+
+  # Verify all examples are requiring the latest version of the extension
+  while IFS= read -r -d '' file; do
+    assertContains "${file}" '"solvedata/plugins-magento2": "'"${version}"'"'
+  done <  <(find examples -name composer.json -print0)
 }
 
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then

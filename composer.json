@@ -3,7 +3,7 @@
   "description": "Solve Magento 2 extension",
   "license": "Apache-2.0",
   "type": "magento2-module",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "require": {
     "php": "~7.2",
     "magento/module-catalog": ">=103.0",
