@@ -310,13 +310,10 @@ class PayloadConverter
             $attributes['imported_at'] = $this->getFormattedDatetime();
         }
 
-        if (!empty($order[OrderInterface::COUPON_CODE])) {
-            $attributes['magento_coupon_code'] = $order[OrderInterface::COUPON_CODE];
-        }
-
-        if (!empty($order['coupon_rule_name'])) {
-            $attributes['magento_coupon_rule_name'] = $order['coupon_rule_name'];
-        }
+        // Add a copy of the Magento order blob into attributes.
+        // This allows us to inspect other fields inside Magento's order that
+        //      are not present in Solve's order but could be relevant in the future.
+        $attributes['magento_order'] = $order;
 
         return $attributes;
     }
@@ -353,6 +350,11 @@ class PayloadConverter
             $attributes['magento_merged_into_quote'] = $options['merged_into']['entity_id'] ?? 'unknown';
         }
 
+        // Add a copy of the Magento quote blob into attributes.
+        // This allows us to inspect other fields inside Magento's quote that
+        //      are not present in Solve's cart but could be relevant in the future.
+        $attributes['magento_quote'] = $quote;
+
         return $attributes;
     }
 
@@ -371,6 +373,11 @@ class PayloadConverter
         if (!empty($payment[OrderPaymentInterface::METHOD])) {
             $attributes['method'] = $payment[OrderPaymentInterface::METHOD];
         }
+
+        // Add a copy of the Magento payment blob into attributes.
+        // This allows us to inspect other fields inside Magento's payment that
+        //      are not present in Solve's payment but could be relevant in the future.
+        $attributes['magento_payment'] = $payment;
 
         return $attributes;
     }
@@ -498,6 +505,10 @@ class PayloadConverter
      */
     public function convertProfileData(array $customer, array $area): array
     {
+        // Remove potentially sensitive fields from the customer array.
+        unset($customer['password_hash']);
+        unset($customer['rp_token']);
+
         $customerId = $customer[CustomerInterface::ID] ?? $customer['entity_id'] ?? null;
 
         $identifiers = [
