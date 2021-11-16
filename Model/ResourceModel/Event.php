@@ -19,7 +19,7 @@ class Event extends AbstractDb
 
     const TABLE_NAME = 'solvedata_event';
 
-    const PURGE_HISTORICAL_EVENTS_BATCH_SIZE = 1000;
+    const PURGE_HISTORICAL_EVENTS_BATCH_SIZE = 5000;
 
     /**
      * @var Config
