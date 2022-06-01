@@ -9,7 +9,7 @@ use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbst
 class CreateOrUpdateCart extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
-mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOptions!) {
+mutation createOrUpdateCart($input: CartInput!, $options: CreateOrUpdateCartOptions) {
     createOrUpdateCart(input: $input, options: $options) {
         profile_id
     }
