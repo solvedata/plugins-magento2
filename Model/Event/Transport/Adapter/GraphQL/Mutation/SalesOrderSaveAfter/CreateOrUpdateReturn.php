@@ -10,7 +10,7 @@ use SolveData\Events\Model\Event\Transport\Adapter\GraphQL\Mutation\MutationAbst
 class CreateOrUpdateReturn extends MutationAbstract
 {
     const QUERY = <<<'GRAPHQL'
-mutation create_or_update_return($input: ReturnInput!, $options: CreateOrUpdateReturnOptions!) {
+mutation create_or_update_return($input: ReturnInput!, $options: CreateOrUpdateReturnOptions) {
     create_or_update_return(input: $input, options: $options) {
         id
     }
@@ -61,7 +61,7 @@ GRAPHQL;
             // The order is being imported. Use the order's "created at" field to approximate the "occurred at" time.
             $occurredAt = $order['created_at'];
         }
-                
+
         $options = [
             'occurred_at' => $this->payloadConverter->getFormattedDatetime($occurredAt)
         ];
